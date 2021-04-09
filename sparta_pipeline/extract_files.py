@@ -10,7 +10,6 @@ keys = [file['Key'] for file in bucket_contents['Contents']]
 
 
 def extract_csv():
-    csv_keys = []
     csv_dfs = []
     for key in keys:
         if 'Academy' in key:
@@ -25,7 +24,6 @@ def extract_csv():
 
 
 def extract_json():
-    json_keys = []
     json_files = []
     for key in keys:
         if 'Talent' in key:
