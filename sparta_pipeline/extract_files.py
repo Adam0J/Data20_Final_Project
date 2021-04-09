@@ -27,6 +27,22 @@ def extract_csv():
     return csv_dfs
 
 
-test = extract_csv()
-print(test)
+def extract_json():
+    json_keys = []
+    json_files = []
+    for key in keys:
+        if 'Talent' in key:
+            json_keys.append(key)
+
+    for key in json_keys:
+        s3_object = s3.get_object(
+            Bucket=bucket_name,
+            Key=key)
+        strbody = s3_object['Body']
+        data = strbody.read()
+        obj = json.loads(data)
+        json_files.append(obj)
+
+    return json_files
+
 
