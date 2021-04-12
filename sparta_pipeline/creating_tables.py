@@ -13,14 +13,32 @@ server = converted[0]
 database = converted[1]
 user = converted[2]
 password = converted[3]
-driver = 'ODBC+Driver+17+for+SQL+Server'
+driver = converted[4]
 engine = create_engine(f"mssql+pyodbc://{user}:{password}@{server}/{database}?driver={driver}")
 
 connection = engine.connect()
+meta = MetaData()
+
+
+def create_behaviours():
+    behaviours = Table(
+        'behaviours', meta,
+        Column('behaviour_ID', Integer, primary_key=True),
+        Column('behaviour', String)
+    )
+
+
+def create_weeks():
+    weeks = Table(
+        'weeks', meta,
+        Column('student_id', Integer, ForeignKey=True),
+        Column('week_id', Integer),
+        Column('behaviour_id', Integer, ForeignKey=True),
+        Column('score', Integer)
+    )
 
 
 def create_student_information():
-    meta = MetaData()
     students_information = Table(
         'students_information', meta,
         Column('id', Integer, primary_key=True),
@@ -33,7 +51,9 @@ def create_student_information():
         Column('course_id', Integer),
         Column('course_code_id', Integer)
     )
-    meta.create_all(engine)
+
+
+meta.create_all(engine)
 
 
 create_student_information()
