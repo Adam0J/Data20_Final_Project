@@ -20,6 +20,22 @@ connection = engine.connect()
 meta = MetaData()
 
 
+def create_weaknesses():
+    Table(
+        'weaknesses', meta,
+        Column('weakness_id', Integer, primary_key=True),
+        Column('name', String)
+    )
+
+
+def create_student_strengths():
+    Table(
+        'student_weaknesses', meta,
+        Column('student_id', ForeignKey("student_information.student_id")),
+        Column('weakness_id', ForeignKey("strengths.weakness_id"))
+    )
+
+
 def create_behaviours():
     Table(
         'behaviours', meta,
@@ -65,7 +81,7 @@ def create_student_information():
         Column('financial_support_self', Boolean),
         Column('results', Boolean),
         Column('course_id', Integer),
-        Column('course_code_id', Integer, ForeignKey("course_codes.course_id"))
+        Column('course_code_id', Integer)
     )
 
 
