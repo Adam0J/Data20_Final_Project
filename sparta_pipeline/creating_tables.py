@@ -38,7 +38,25 @@ def create_weeks():
     )
 
 
+def create_techs():
+
+    techs = Table(
+        'techs', meta,
+        Column('tech_id', Integer, primary_key=True),
+        Column('name', String)
+    )
+
+
+def create_self_score():
+    self_score = Table(
+        'self_score', meta,
+        Column('student_id', Integer, ForeignKey("students_information.id")),
+        Column('tech_id', Integer, ForeignKey("techs.tech_id"))
+    )
+
+
 def create_student_information():
+
     students_information = Table(
         'students_information', meta,
         Column('id', Integer, primary_key=True),
@@ -46,14 +64,28 @@ def create_student_information():
         Column('date', Date),
         Column('self_development', Boolean),
         Column('geo_flex', Boolean),
-        Column('finanical_support_self', Boolean),
+        Column('financial_support_self', Boolean),
         Column('results', Boolean),
         Column('course_id', Integer),
-        Column('course_code_id', Integer)
+        Column('course_code_id', Integer, ForeignKey("course_codes.course_id"))
+    )
+
+
+def create_courses():
+
+    courses = Table(
+        'courses', meta,
+        Column('id', Integer, primary_key=True),
+        Column('name', String),
+    )
+
+
+def create_course_id():
+    course_code_id = Table(
+        'course_id', meta,
+        Column('course_code_id', Integer, primary_key=True),
+        Column('name_number', String),
     )
 
 
 meta.create_all(engine)
-
-
-create_student_information()
