@@ -28,7 +28,7 @@ def create_weaknesses():
     )
 
 
-def create_student_strengths():
+def create_student_weaknesses():
     Table(
         'student_weaknesses', meta,
         Column('student_id', ForeignKey("student_information.student_id")),
