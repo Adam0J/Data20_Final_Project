@@ -1,6 +1,5 @@
 from sparta_pipeline import extract_files
 import unittest
-import pytest
 
 
 class ExtractTests(unittest.TestCase):
