@@ -20,19 +20,53 @@ connection = engine.connect()
 meta = MetaData()
 
 
-def create_strengths():
+def create_weaknesses():
     Table(
-        'strengths', meta,
-        Column('strength_id', Integer, primary_key=True),
+        'weaknesses', meta,
+        Column('weakness_id', Integer, primary_key=True),
         Column('name', String)
     )
 
 
 def create_student_strengths():
     Table(
-        'student_strengths', meta,
+        'student_weaknesses', meta,
         Column('student_id', ForeignKey("student_information.student_id")),
-        Column('strength_id', ForeignKey("strengths.strength_id"))
+        Column('weakness_id', ForeignKey("strengths.weakness_id"))
+    )
+
+
+def create_behaviours():
+    Table(
+        'behaviours', meta,
+        Column('behaviour_ID', Integer, primary_key=True),
+        Column('behaviour', String)
+    )
+
+
+def create_weeks():
+    Table(
+        'weeks', meta,
+        Column('student_id', Integer, ForeignKey=True),
+        Column('week_id', Integer),
+        Column('behaviour_id', Integer, ForeignKey=True),
+        Column('score', Integer)
+    )
+
+
+def create_techs():
+    Table(
+        'techs', meta,
+        Column('tech_id', Integer, primary_key=True),
+        Column('name', String)
+    )
+
+
+def create_self_score():
+    Table(
+        'self_score', meta,
+        Column('student_id', Integer, ForeignKey("students_information.id")),
+        Column('tech_id', Integer, ForeignKey("techs.tech_id"))
     )
 
 
@@ -49,8 +83,39 @@ def create_student_information():
         Column('course_id', Integer),
         Column('course_code_id', Integer)
     )
-    
 
-create_strengths()
+
+def create_strengths():
+    Table(
+        'strengths', meta,
+        Column('strength_id', Integer, primary_key=True),
+        Column('name', String)
+    )
+
+
+def create_student_strengths():
+    Table(
+        'student_strengths', meta,
+        Column('student_id', Integer, ForeignKey("student_information.id")),
+        Column('strength_id', Integer, ForeignKey("strengths.strength_id"))
+    )
+
+
+def create_courses():
+    Table(
+        'courses', meta,
+        Column('id', Integer, primary_key=True),
+        Column('name', String),
+    )
+
+
+def create_course_id():
+    Table(
+        'course_id', meta,
+        Column('course_code_id', Integer, primary_key=True),
+        Column('name_number', String),
+    )
+
+
 meta.create_all(engine)
 
