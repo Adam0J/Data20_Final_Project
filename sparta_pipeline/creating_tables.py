@@ -59,3 +59,21 @@ def create_student_information():
     )
     meta.create_all(engine)
 
+
+def create_courses():
+
+    courses = Table(
+        'courses', meta,
+        Column('id', Integer, primary_key=True),
+        Column('name', String),
+    )
+    meta.create_all(engine)
+
+
+def create_course_id():
+    course_code_id = Table(
+        'course_id', meta,
+        Column('course_code_id', Integer, primary_key=True),
+        Column('name_number', String),
+    )
+    meta.create_all(engine)
