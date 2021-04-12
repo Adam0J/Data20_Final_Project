@@ -20,6 +20,24 @@ connection = engine.connect()
 meta = MetaData()
 
 
+def create_behaviours():
+    behaviours = Table(
+        'behaviours', meta,
+        Column('behaviour_ID', Integer, primary_key=True),
+        Column('behaviour', String)
+    )
+
+
+def create_weeks():
+    weeks = Table(
+        'weeks', meta,
+        Column('student_id', Integer, ForeignKey=True),
+        Column('week_id', Integer),
+        Column('behaviour_id', Integer, ForeignKey=True),
+        Column('score', Integer)
+    )
+
+
 def create_techs():
 
     techs = Table(
@@ -29,18 +47,12 @@ def create_techs():
     )
 
 
-meta.create_all(engine)
-
-
 def create_self_score():
     self_score = Table(
         'self_score', meta,
         Column('student_id', Integer, ForeignKey("students_information.id")),
         Column('tech_id', Integer, ForeignKey("techs.tech_id"))
     )
-
-
-meta.create_all(engine)
 
 
 def create_student_information():
@@ -57,7 +69,6 @@ def create_student_information():
         Column('course_id', Integer),
         Column('course_code_id', Integer, ForeignKey("course_codes.course_id"))
     )
-    meta.create_all(engine)
 
 
 def create_courses():
@@ -67,7 +78,6 @@ def create_courses():
         Column('id', Integer, primary_key=True),
         Column('name', String),
     )
-    meta.create_all(engine)
 
 
 def create_course_id():
@@ -76,4 +86,6 @@ def create_course_id():
         Column('course_code_id', Integer, primary_key=True),
         Column('name_number', String),
     )
-    meta.create_all(engine)
+
+
+meta.create_all(engine)
