@@ -21,7 +21,7 @@ meta = MetaData()
 
 
 def create_behaviours():
-    behaviours = Table(
+    Table(
         'behaviours', meta,
         Column('behaviour_ID', Integer, primary_key=True),
         Column('behaviour', String)
@@ -29,7 +29,7 @@ def create_behaviours():
 
 
 def create_weeks():
-    weeks = Table(
+    Table(
         'weeks', meta,
         Column('student_id', Integer, ForeignKey=True),
         Column('week_id', Integer),
@@ -39,8 +39,7 @@ def create_weeks():
 
 
 def create_techs():
-
-    techs = Table(
+    Table(
         'techs', meta,
         Column('tech_id', Integer, primary_key=True),
         Column('name', String)
@@ -48,7 +47,7 @@ def create_techs():
 
 
 def create_self_score():
-    self_score = Table(
+    Table(
         'self_score', meta,
         Column('student_id', Integer, ForeignKey("students_information.id")),
         Column('tech_id', Integer, ForeignKey("techs.tech_id"))
@@ -56,8 +55,7 @@ def create_self_score():
 
 
 def create_student_information():
-
-    students_information = Table(
+    Table(
         'students_information', meta,
         Column('id', Integer, primary_key=True),
         Column('name', String),
@@ -71,9 +69,24 @@ def create_student_information():
     )
 
 
-def create_courses():
+def create_strengths():
+    Table(
+        'strengths', meta,
+        Column('strength_id', Integer, primary_key=True),
+        Column('name', String)
+    )
 
-    courses = Table(
+
+def create_student_strengths():
+    Table(
+        'student_strengths', meta,
+        Column('student_id', Integer, ForeignKey("student_information.id")),
+        Column('strength_id', Integer, ForeignKey("strengths.strength_id"))
+    )
+
+
+def create_courses():
+    Table(
         'courses', meta,
         Column('id', Integer, primary_key=True),
         Column('name', String),
@@ -81,7 +94,7 @@ def create_courses():
 
 
 def create_course_id():
-    course_code_id = Table(
+    Table(
         'course_id', meta,
         Column('course_code_id', Integer, primary_key=True),
         Column('name_number', String),
@@ -89,3 +102,4 @@ def create_course_id():
 
 
 meta.create_all(engine)
+
