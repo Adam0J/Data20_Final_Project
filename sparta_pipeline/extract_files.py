@@ -8,8 +8,6 @@ logging.basicConfig(level=logging.DEBUG)
 
 s3 = boto3.client('s3')
 bucket_name = 'data20-final-project'
-bucket_contents = s3.list_objects_v2(Bucket=bucket_name)
-keys = [file['Key'] for file in bucket_contents['Contents']]
 
 
 def extract_csv(key):
@@ -21,7 +19,6 @@ def extract_csv(key):
         return pd.read_csv(strbody)
     else:
         return "That is not a CSV file."
-
 
 
 def extract_json(key):
