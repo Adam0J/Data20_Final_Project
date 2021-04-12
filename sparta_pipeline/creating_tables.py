@@ -32,7 +32,7 @@ def create_student_weaknesses():
     Table(
         'student_weaknesses', meta,
         Column('student_id', ForeignKey("student_information.student_id")),
-        Column('weakness_id', ForeignKey("strengths.weakness_id"))
+        Column('weakness_id', ForeignKey("weaknesses.weakness_id"))
     )
 
 
