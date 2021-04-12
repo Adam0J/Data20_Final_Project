@@ -20,6 +20,29 @@ connection = engine.connect()
 meta = MetaData()
 
 
+def create_techs():
+
+    techs = Table(
+        'techs', meta,
+        Column('tech_id', Integer, primary_key=True),
+        Column('name', String)
+    )
+
+
+meta.create_all(engine)
+
+
+def create_self_score():
+    self_score = Table(
+        'self_score', meta,
+        Column('student_id', Integer, ForeignKey("students_information.id")),
+        Column('tech_id', Integer, ForeignKey("techs.tech_id"))
+    )
+
+
+meta.create_all(engine)
+
+
 def create_student_information():
 
     students_information = Table(
