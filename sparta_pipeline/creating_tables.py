@@ -13,7 +13,7 @@ server = converted[0]
 database = converted[1]
 user = converted[2]
 password = converted[3]
-driver = 'ODBC+Driver+17+for+SQL+Server'
+driver = converted[4]
 engine = create_engine(f"mssql+pyodbc://{user}:{password}@{server}/{database}?driver={driver}")
 
 connection = engine.connect()
@@ -36,3 +36,21 @@ def create_student_information():
     )
     meta.create_all(engine)
 
+
+def create_courses():
+
+    courses = Table(
+        'courses', meta,
+        Column('id', Integer, primary_key=True),
+        Column('name', String),
+    )
+    meta.create_all(engine)
+
+
+def create_course_id():
+    course_code_id = Table(
+        'course_id', meta,
+        Column('course_code_id', Integer, primary_key=True),
+        Column('name_number', String),
+    )
+    meta.create_all(engine)
