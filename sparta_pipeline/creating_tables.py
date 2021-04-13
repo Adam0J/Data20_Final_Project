@@ -24,130 +24,115 @@ meta = MetaData()
 def create_courses():
     Table(
         'courses', meta,
-        Column('id', Integer, primary_key=True),
+        Column('course_id', Integer, primary_key=True),
         Column('name', String),
     )
 
 
-create_courses()
-
-
 def create_course_id():
     Table(
-        'course_codes', meta,
+        'classes', meta,
         Column('course_code_id', Integer, primary_key=True),
         Column('name_number', String),
     )
 
 
-create_course_id()
-
-
 def create_student_information():
     Table(
-        'students_information', meta,
-        Column('id', Integer, primary_key=True),
+        'student_information', meta,
+        Column('student_id', Integer, primary_key=True),
         Column('name', String),
         Column('date', Date),
         Column('self_development', Boolean),
         Column('geo_flex', Boolean),
         Column('financial_support_self', Boolean),
-        Column('results', Boolean),
-        Column('course_id', Integer, ForeignKey("courses.id")),
-        Column('course_code_id', Integer, ForeignKey("course_codes.course_code_id"))
+        Column('result', Boolean),
+        Column('course_id', Integer, ForeignKey("courses.course_id")),
+        Column('course_code_id', Integer, ForeignKey("classes.course_code_id"))
     )
-
-
-create_student_information()
 
 
 def create_behaviours():
     Table(
-        'behaviours', meta,
-        Column('behaviour_ID', Integer, primary_key=True),
+        'behaviour_types', meta,
+        Column('behaviour_id', Integer, primary_key=True),
         Column('behaviour', String)
     )
-
-
-create_behaviours()
 
 
 def create_weeks():
     Table(
         'weeks', meta,
-        Column('student_id', Integer, ForeignKey("students_information.id")),
+        Column('student_id', Integer, ForeignKey("student_information.student_id")),
         Column('week_id', Integer),
-        Column('behaviour_id', Integer, ForeignKey("behaviours.behaviour_ID")),
+        Column('behaviour_id', Integer, ForeignKey("behaviour_types.behaviour_id")),
         Column('score', Integer)
     )
 
 
-create_weeks()
-
-
 def create_techs():
     Table(
-        'techs', meta,
+        'tech_types', meta,
         Column('tech_id', Integer, primary_key=True),
         Column('name', String)
     )
 
 
-create_techs()
-
-
 def create_self_score():
     Table(
         'self_score', meta,
-        Column('student_id', Integer, ForeignKey("students_information.id")),
-        Column('tech_id', Integer, ForeignKey("techs.tech_id"))
+        Column('student_id', Integer, ForeignKey("student_information.student_id")),
+        Column('tech_id', Integer, ForeignKey("tech_types.tech_id")),
+        Column('score', Integer)
     )
-
-create_self_score()
 
 
 def create_strengths():
     Table(
-        'strengths', meta,
+        'strength_types', meta,
         Column('strength_id', Integer, primary_key=True),
         Column('name', String)
     )
-
-create_strengths()
 
 
 def create_student_strengths():
     Table(
         'student_strengths', meta,
-        Column('student_id', Integer, ForeignKey("students_information.id")),
-        Column('strength_id', Integer, ForeignKey("strengths.strength_id"))
+        Column('student_id', Integer, ForeignKey("student_information.student_id")),
+        Column('strength_id', Integer, ForeignKey("strength_types.strength_id"))
     )
-
-
-create_student_strengths()
 
 
 def create_weaknesses():
     Table(
-        'weaknesses', meta,
+        'weakness_types', meta,
         Column('weakness_id', Integer, primary_key=True),
         Column('name', String)
     )
 
 
-create_weaknesses()
-
-
 def create_student_weaknesses():
     Table(
         'student_weaknesses', meta,
-        Column('student_id', ForeignKey("students_information.id")),
-        Column('weakness_id', ForeignKey("weaknesses.weakness_id"))
+        Column('student_id', ForeignKey("student_information.student_id")),
+        Column('weakness_id', ForeignKey("weakness_types.weakness_id"))
     )
 
 
-create_student_weaknesses()
+def main():
+    create_courses()
+    create_course_id()
+    create_student_information()
+    create_behaviours()
+    create_weeks()
+    create_techs()
+    create_self_score()
+    create_strengths()
+    create_student_strengths()
+    create_weaknesses()
+    create_student_weaknesses()
+    meta.create_all(engine)
 
 
-meta.create_all(engine)
-
+if __name__ == "__main__":
+    main()
