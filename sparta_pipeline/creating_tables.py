@@ -29,10 +29,10 @@ def create_courses():
     )
 
 
-def create_course_id():
+def create_classes():
     Table(
         'classes', meta,
-        Column('course_code_id', Integer, primary_key=True),
+        Column('class_id', Integer, primary_key=True),
         Column('name_number', String),
     )
 
@@ -48,7 +48,7 @@ def create_student_information():
         Column('financial_support_self', Boolean),
         Column('result', Boolean),
         Column('course_id', Integer, ForeignKey("courses.course_id")),
-        Column('course_code_id', Integer, ForeignKey("classes.course_code_id"))
+        Column('class_id', Integer, ForeignKey("classes.class_id"))
     )
 
 
@@ -121,7 +121,7 @@ def create_student_weaknesses():
 
 def main():
     create_courses()
-    create_course_id()
+    create_classes()
     create_student_information()
     create_behaviours()
     create_weeks()
