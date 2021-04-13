@@ -3,12 +3,14 @@ import pandas as pd
 import extract_files
 import boto3
 from pprint import pprint
+import re
 import logging
 import time
 
 logging.basicConfig(level=logging.INFO)
-data = extract_files.extract_json("Talent/10384.json")
-pprint(data, sort_dicts=False)
+pd.set_option("display.max_rows", None, "display.max_columns", None)
+data = extract_files.extract_csv("Talent/April2019Applicants.csv")
+# pprint(data, sort_dicts=False)
 si_columns = ["name", "date", "self_development", "geo_flex", "financial_support_self", "result"]
 
 
@@ -41,10 +43,14 @@ def convert_scores(info):
 
 def convert_pi(info):
     """
-    :param info: this will be a dictionary
+    :param info: this will be a dataframe
     :return: will be dataframe
     """
-    pass
+    info["phone_number"] = info["phone_number"].fillna("0")
+    temp = [re.sub('[^+0-9]', '', i) for i in info.get("phone_number").values.tolist() if i is not None]
+    new = pd.DataFrame(temp, columns=["phone_number"])
+    info.update(new)
+    return info
 
 
 def convert_weeks(info):
@@ -64,3 +70,4 @@ def convert_courses(info):
     pass
 
 
+pprint(convert_pi(data))
