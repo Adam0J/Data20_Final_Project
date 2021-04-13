@@ -117,6 +117,37 @@ def create_student_weaknesses():
     )
 
 
+def create_scores():
+    Table(
+        'scores', meta,
+        Column('student_id', Integer, primary_key=True),
+        Column('psychometrics_score', Integer),
+        Column('presentations_score', Integer),
+        Column('psycometrics_max', Integer),
+        Column('presentations_max', Integer)
+    )
+
+
+def create_personal_information():
+    Table(
+        'personal_information', meta,
+        Column('student_id', Integer, primary_key=True),
+        Column('name', String),
+        Column('invited_date', Date),
+        Column('gender', String),
+        Column('date_of_birth', Date),
+        Column('email', String),
+        Column('city', String),
+        Column('address', String),
+        Column('postcode', String),
+        Column('phone_number', String),
+        Column('university', String),
+        Column('degree', String),
+        Column('month', String),
+        Column('invited_by', String)
+    )
+
+
 def main():
     create_courses()
     create_classes()
@@ -129,6 +160,8 @@ def main():
     create_student_strengths()
     create_weaknesses()
     create_student_weaknesses()
+    create_scores()
+    create_personal_information()
     meta.create_all(engine)
 
 
