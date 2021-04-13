@@ -1,7 +1,5 @@
-import pyodbc
-import sqlalchemy
 from sqlalchemy import *
-import pandas as pd
+
 
 file = open("credentials.txt")
 all_lines = file.readlines()
