@@ -3,13 +3,16 @@ import pandas as pd
 import extract_files
 import boto3
 from pprint import pprint
+import re
 import logging
 import time
 import re
 
 logging.basicConfig(level=logging.INFO)
-data = extract_files.extract_text("Talent/Sparta Day 17 April 2019.txt")
 
+pd.set_option("display.max_rows", None, "display.max_columns", None)
+# data = extract_files.extract_csv("Talent/April2019Applicants.csv")
+# pprint(data, sort_dicts=False)
 si_columns = ["name", "date", "self_development", "geo_flex", "financial_support_self", "result"]
 courses_column = "name"
 courses = []
@@ -52,10 +55,14 @@ def convert_scores(info):
 
 def convert_pi(info):
     """
-    :param info: this will be a dictionary
+    :param info: this will be a dataframe
     :return: will be dataframe
     """
-    pass
+    info["phone_number"] = info["phone_number"].fillna("0")
+    temp = [re.sub('[^+0-9]', '', i) for i in info.get("phone_number").values.tolist() if i is not None]
+    new = pd.DataFrame(temp, columns=["phone_number"])
+    info.update(new)
+    return info
 
 
 def convert_weeks(info):
@@ -80,13 +87,13 @@ def convert_courses(info):
                 to_load_courses.update({courses_column: info[entry]})
                 courses.append(info[entry])
             else:
-                pass
+                continue
     return pd.DataFrame(to_load_courses, index=[0])
 
 
-pprint(convert_courses(data))
-print(courses)
+# pprint(convert_courses(data))
+# print(courses)
+# pprint(convert_pi(data))
+# test = convert_scores(data)
+# print(test)
 
-
-test = convert_scores(data)
-print(test)
