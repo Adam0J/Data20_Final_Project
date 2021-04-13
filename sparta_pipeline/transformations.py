@@ -4,6 +4,7 @@ import extract_files
 import boto3
 from pprint import pprint
 import logging
+import time
 
 logging.basicConfig(level=logging.INFO)
 data = extract_files.extract_json("Talent/10384.json")
@@ -21,7 +22,7 @@ def convert_si(info):
         if i in info:
             # logging.info(i)
             # logging.info(info.get(i))
-            if info.get(i) in ("Yes", "Pass"):
+            if info.get(i) in ["Yes", "Pass"]:
                 to_load.update({i: 1})
             elif info.get(i) in ["No", "Fail"]:
                 to_load.update({i: 0})
@@ -30,4 +31,36 @@ def convert_si(info):
     return pd.DataFrame(to_load, index=[0])
 
 
-pprint(convert_si(data), sort_dicts=False)
+def convert_scores(info):
+    """
+    :param info: this will be a dictionary
+    :return: will be dataframe
+    """
+    pass
+
+
+def convert_pi(info):
+    """
+    :param info: this will be a dictionary
+    :return: will be dataframe
+    """
+    pass
+
+
+def convert_weeks(info):
+    """
+    :param info: this will be a dataframe
+    :return: should be dataframe
+    """
+    pass
+
+
+def convert_courses(info):
+    """
+    probably won't need this
+    :param info:
+    :return:
+    """
+    pass
+
+
