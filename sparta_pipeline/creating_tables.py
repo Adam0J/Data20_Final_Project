@@ -47,9 +47,9 @@ def create_behaviours():
 def create_weeks():
     Table(
         'weeks', meta,
-        Column('student_id', Integer, ForeignKey=True),
+        Column('student_id', Integer, ForeignKey("students_information.id")),
         Column('week_id', Integer),
-        Column('behaviour_id', Integer, ForeignKey=True),
+        Column('behaviour_id', Integer, ForeignKey("behaviours.behaviour_ID")),
         Column('score', Integer)
     )
 
