@@ -80,8 +80,8 @@ def create_student_information():
         Column('geo_flex', Boolean),
         Column('financial_support_self', Boolean),
         Column('results', Boolean),
-        Column('course_id', Integer),
-        Column('course_code_id', Integer)
+        Column('course_id', Integer, ForeignKey("courses.id")),
+        Column('course_code_id', Integer, ForeignKey("course_codes.course_code_id"))
     )
 
 
@@ -111,7 +111,7 @@ def create_courses():
 
 def create_course_id():
     Table(
-        'course_id', meta,
+        'course_codes', meta,
         Column('course_code_id', Integer, primary_key=True),
         Column('name_number', String),
     )
