@@ -5,10 +5,11 @@ import boto3
 from pprint import pprint
 import logging
 import time
+import re
 
 logging.basicConfig(level=logging.INFO)
-data = extract_files.extract_json("Talent/10384.json")
-pprint(data, sort_dicts=False)
+data = extract_files.extract_text("Talent/Sparta Day 17 April 2019.txt")
+
 si_columns = ["name", "date", "self_development", "geo_flex", "financial_support_self", "result"]
 courses_column = "name"
 courses = []
@@ -38,7 +39,15 @@ def convert_scores(info):
     :param info: this will be a dictionary
     :return: will be dataframe
     """
-    pass
+    new_list = [re.split(', | -  |: |/', i) for i in info]
+    student_scores = []
+    for student in new_list[3:]:
+        psyc_score = student[2]
+        psyc_max = student[3]
+        pres_score = student[5]
+        pres_max = student[6]
+        student_scores.append([psyc_score, psyc_max, pres_score, pres_max])
+    return pd.DataFrame(student_scores)
 
 
 def convert_pi(info):
@@ -79,3 +88,5 @@ pprint(convert_courses(data))
 print(courses)
 
 
+test = convert_scores(data)
+print(test)
