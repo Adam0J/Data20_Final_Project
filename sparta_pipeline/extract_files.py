@@ -20,6 +20,7 @@ def extract_csv(key):
     else:
         return "That is not a CSV file."
 
+print(extract_csv('Talent/'))
 
 def extract_json(key):
     if re.findall(".json$", key):

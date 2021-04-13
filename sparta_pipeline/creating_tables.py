@@ -1,4 +1,5 @@
 import pyodbc
+import sqlalchemy
 from sqlalchemy import *
 import pandas as pd
 
@@ -20,54 +21,26 @@ connection = engine.connect()
 meta = MetaData()
 
 
-def create_weaknesses():
+def create_courses():
     Table(
-        'weaknesses', meta,
-        Column('weakness_id', Integer, primary_key=True),
-        Column('name', String)
+        'courses', meta,
+        Column('id', Integer, primary_key=True),
+        Column('name', String),
     )
 
 
-def create_student_weaknesses():
+create_courses()
+
+
+def create_course_id():
     Table(
-        'student_weaknesses', meta,
-        Column('student_id', ForeignKey("student_information.student_id")),
-        Column('weakness_id', ForeignKey("weaknesses.weakness_id"))
+        'course_codes', meta,
+        Column('course_code_id', Integer, primary_key=True),
+        Column('name_number', String),
     )
 
 
-def create_behaviours():
-    Table(
-        'behaviours', meta,
-        Column('behaviour_ID', Integer, primary_key=True),
-        Column('behaviour', String)
-    )
-
-
-def create_weeks():
-    Table(
-        'weeks', meta,
-        Column('student_id', Integer, ForeignKey("students_information.id")),
-        Column('week_id', Integer),
-        Column('behaviour_id', Integer, ForeignKey("behaviours.behaviour_ID")),
-        Column('score', Integer)
-    )
-
-
-def create_techs():
-    Table(
-        'techs', meta,
-        Column('tech_id', Integer, primary_key=True),
-        Column('name', String)
-    )
-
-
-def create_self_score():
-    Table(
-        'self_score', meta,
-        Column('student_id', Integer, ForeignKey("students_information.id")),
-        Column('tech_id', Integer, ForeignKey("techs.tech_id"))
-    )
+create_course_id()
 
 
 def create_student_information():
@@ -85,6 +58,54 @@ def create_student_information():
     )
 
 
+create_student_information()
+
+
+def create_behaviours():
+    Table(
+        'behaviours', meta,
+        Column('behaviour_ID', Integer, primary_key=True),
+        Column('behaviour', String)
+    )
+
+
+create_behaviours()
+
+
+def create_weeks():
+    Table(
+        'weeks', meta,
+        Column('student_id', Integer, ForeignKey("students_information.id")),
+        Column('week_id', Integer),
+        Column('behaviour_id', Integer, ForeignKey("behaviours.behaviour_ID")),
+        Column('score', Integer)
+    )
+
+
+create_weeks()
+
+
+def create_techs():
+    Table(
+        'techs', meta,
+        Column('tech_id', Integer, primary_key=True),
+        Column('name', String)
+    )
+
+
+create_techs()
+
+
+def create_self_score():
+    Table(
+        'self_score', meta,
+        Column('student_id', Integer, ForeignKey("students_information.id")),
+        Column('tech_id', Integer, ForeignKey("techs.tech_id"))
+    )
+
+create_self_score()
+
+
 def create_strengths():
     Table(
         'strengths', meta,
@@ -92,29 +113,40 @@ def create_strengths():
         Column('name', String)
     )
 
+create_strengths()
+
 
 def create_student_strengths():
     Table(
         'student_strengths', meta,
-        Column('student_id', Integer, ForeignKey("student_information.id")),
+        Column('student_id', Integer, ForeignKey("students_information.id")),
         Column('strength_id', Integer, ForeignKey("strengths.strength_id"))
     )
 
 
-def create_courses():
+create_student_strengths()
+
+
+def create_weaknesses():
     Table(
-        'courses', meta,
-        Column('id', Integer, primary_key=True),
-        Column('name', String),
+        'weaknesses', meta,
+        Column('weakness_id', Integer, primary_key=True),
+        Column('name', String)
     )
 
 
-def create_course_id():
+create_weaknesses()
+
+
+def create_student_weaknesses():
     Table(
-        'course_codes', meta,
-        Column('course_code_id', Integer, primary_key=True),
-        Column('name_number', String),
+        'student_weaknesses', meta,
+        Column('student_id', ForeignKey("students_information.id")),
+        Column('weakness_id', ForeignKey("weaknesses.weakness_id"))
     )
+
+
+create_student_weaknesses()
 
 
 meta.create_all(engine)
