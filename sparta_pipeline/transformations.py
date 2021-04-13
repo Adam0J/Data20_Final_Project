@@ -11,6 +11,8 @@ logging.basicConfig(level=logging.INFO)
 data = extract_files.extract_text("Talent/Sparta Day 17 April 2019.txt")
 
 si_columns = ["name", "date", "self_development", "geo_flex", "financial_support_self", "result"]
+courses_column = "name"
+courses = []
 
 
 def convert_si(info):
@@ -70,7 +72,20 @@ def convert_courses(info):
     :param info:
     :return:
     """
-    pass
+    to_load_courses = {}
+    for entry in info:
+        if entry == "course_interest":
+            # only add course if it's not already been added
+            if str(info[entry]) not in courses:
+                to_load_courses.update({courses_column: info[entry]})
+                courses.append(info[entry])
+            else:
+                pass
+    return pd.DataFrame(to_load_courses, index=[0])
+
+
+pprint(convert_courses(data))
+print(courses)
 
 
 test = convert_scores(data)
