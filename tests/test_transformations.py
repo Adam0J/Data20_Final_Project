@@ -41,7 +41,11 @@ class TransformationTests(unittest.TestCase):
                      "Analytic_W1": 1, "Independent_W1": 3, "Determined_W1": 4, "Professional_W1": 2, "Studious_W1": 2,
                      "Imaginative_W1": 2}
         test_pd = pd.DataFrame(test_dict, index=[0])
-        result_dict = {"week_id": [1, 1, 1, 1, 1, 1], "behaviour_id": [1, 2, 3, 4, 5, 6], "score": [1.0, 3.0, 4.0, 2.0, 2.0, 2.0]}
+        result_dict = {"name": "Pyotr De Zuani", "trainer": "Trixie Orange",
+                       "behaviours": ["Analytic", "Independent", "Determined", "Professional", "Studious",
+                                      "Imaginative"],
+                       "score": [1, 3, 4, 2, 2, 2],
+                       "week_id": [1, 1, 1, 1, 1, 1]}
         result_pd = pd.DataFrame(result_dict)
         pd.testing.assert_frame_equal(transformations.convert_weeks(test_pd), result_pd)
 
