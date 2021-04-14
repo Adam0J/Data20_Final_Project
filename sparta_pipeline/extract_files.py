@@ -32,7 +32,7 @@ def extract_json(key):
         return "That is not a JSON file."
 
 
-def extract_text(key):
+def extract_txt(key):
     if re.findall(".txt$", key):
         s3_object = s3.get_object(
             Bucket=bucket_name,
