@@ -1,6 +1,6 @@
 from sqlalchemy import *
 import pandas as pd
-import extract_files
+import sparta_pipeline.extract_files
 import boto3
 from pprint import pprint
 import re
