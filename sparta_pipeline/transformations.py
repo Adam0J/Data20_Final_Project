@@ -8,8 +8,10 @@ import time
 
 logging.basicConfig(level=logging.INFO)
 data = extract_files.extract_json("Talent/10384.json")
+dataCsv = extract_files.extract_csv("Academy/Data_28_2019-02-18.csv")
 pprint(data, sort_dicts=False)
 si_columns = ["name", "date", "self_development", "geo_flex", "financial_support_self", "result"]
+weeks_columns = ["student_id", "week_id", "behaviour_id", "score"]
 courses_column = "name"
 courses = []
 
@@ -49,12 +51,17 @@ def convert_pi(info):
     pass
 
 
-def convert_weeks(info):
+def convert_weeks(info):  # WORK ON THIS TOMORROW!
     """
     :param info: this will be a dataframe
     :return: should be dataframe
     """
-    pass
+    # use multiples of indexes once you have a list to get the values per week
+    for i in info:
+        if i not in ["name", "trainer"]:
+            # print column header, column type, last letter of header
+            print(i, type(i), i[-1])
+    
 
 
 def convert_courses(info):
@@ -75,7 +82,5 @@ def convert_courses(info):
     return pd.DataFrame(to_load_courses, index=[0])
 
 
-pprint(convert_courses(data))
-print(courses)
-
-
+convert_weeks(dataCsv)
+# pprint(convert_si(data))
