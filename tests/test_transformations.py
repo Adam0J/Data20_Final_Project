@@ -10,7 +10,7 @@ class TransformationTests(unittest.TestCase):
 
     def test_convert_scores(self):
         pass
-    
+
 
     def test_convert_pi(self):
         pass
