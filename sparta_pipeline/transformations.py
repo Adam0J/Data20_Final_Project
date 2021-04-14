@@ -1,6 +1,6 @@
 from sqlalchemy import *
 import pandas as pd
-import extract_files
+from sparta_pipeline import extract_files
 import boto3
 from pprint import pprint
 import re
@@ -11,8 +11,8 @@ import re
 logging.basicConfig(level=logging.INFO)
 
 pd.set_option("display.max_rows", None, "display.max_columns", None)
-# data = extract_files.extract_csv("Talent/April2019Applicants.csv")
-# pprint(data, sort_dicts=False)
+data = extract_files.extract_txt("Talent/Sparta Day 18 September 2019.txt")
+pprint(data, sort_dicts=False)
 si_columns = ["name", "date", "self_development", "geo_flex", "financial_support_self", "result"]
 courses_column = "name"
 courses = []
@@ -45,10 +45,10 @@ def convert_scores(info):
     new_list = [re.split(', | -  |: |/', i) for i in info]
     student_scores = []
     for student in new_list[3:]:
-        psyc_score = student[2]
-        psyc_max = student[3]
-        pres_score = student[5]
-        pres_max = student[6]
+        psyc_score = int(student[2])
+        psyc_max = int(student[3])
+        pres_score = int(student[5])
+        pres_max = int(student[6])
         student_scores.append([psyc_score, psyc_max, pres_score, pres_max])
     return pd.DataFrame(student_scores)
 
@@ -94,6 +94,12 @@ def convert_courses(info):
 # pprint(convert_courses(data))
 # print(courses)
 # pprint(convert_pi(data))
-# test = convert_scores(data)
+test = convert_scores(data)
+test4 = ['Wednesday 18 September 2019',
+         'London Academy',
+         '',
+         'PAULITA SIMMONDS -  Psychometrics: 53/100, Presentation: 14/32', ]
+output = pd.DataFrame([[53, 100, 14, 32]])
+print(convert_scores(test4))
+print(output)
 # print(test)
-
