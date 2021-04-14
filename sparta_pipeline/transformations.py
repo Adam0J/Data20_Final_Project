@@ -13,12 +13,10 @@ import re
 data = extract_files.extract_json("Talent/10384.json")
 dataCsv = extract_files.extract_csv("Academy/Data_28_2019-02-18.csv")
 
-
 logging.basicConfig(level=logging.INFO)
 
 pd.set_option("display.max_rows", None, "display.max_columns", None)
 
-pprint(data, sort_dicts=False)
 si_columns = ["name", "date", "self_development", "geo_flex", "financial_support_self", "result"]
 weeks_columns = ["student_id", "week_id", "behaviour_id", "score"]
 courses_column = "name"
@@ -117,5 +115,3 @@ def convert_courses(info):
             else:
                 continue
     return pd.DataFrame(to_load_courses, index=[0])
-
-

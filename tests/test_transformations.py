@@ -32,7 +32,7 @@ class TransformationTests(unittest.TestCase):
         test = ['Wednesday 18 September 2019',
                 'London Academy',
                 '',
-                'PAULITA SIMMONDS -  Psychometrics: 53/100, Presentation: 14/32', ]
+                'PAULITA SIMMONDS -  Psychometrics: 53/100, Presentation: 14/32']
         output = pd.DataFrame([[53, 100, 14, 32]])
         pd.testing.assert_frame_equal(transformations.convert_scores(test), output)
 
@@ -46,6 +46,7 @@ class TransformationTests(unittest.TestCase):
                                       "Imaginative"],
                        "score": [1, 3, 4, 2, 2, 2],
                        "week_id": [1, 1, 1, 1, 1, 1]}
+
         result_pd = pd.DataFrame(result_dict)
         pd.testing.assert_frame_equal(transformations.convert_weeks(test_pd), result_pd)
 
