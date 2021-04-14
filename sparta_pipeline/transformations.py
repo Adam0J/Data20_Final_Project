@@ -1,17 +1,24 @@
 from sqlalchemy import *
 import pandas as pd
-import extract_files
+from sparta_pipeline import extract_files
 import boto3
 from pprint import pprint
+import re
 import logging
 import time
 import itertools
+import re
+
+
+data = extract_files.extract_json("Talent/10384.json")
+dataCsv = extract_files.extract_csv("Academy/Data_28_2019-02-18.csv")
 
 
 logging.basicConfig(level=logging.INFO)
-data = extract_files.extract_json("Talent/10384.json")
-dataCsv = extract_files.extract_csv("Academy/Data_28_2019-02-18.csv")
-# pprint(data, sort_dicts=False)
+
+pd.set_option("display.max_rows", None, "display.max_columns", None)
+
+pprint(data, sort_dicts=False)
 si_columns = ["name", "date", "self_development", "geo_flex", "financial_support_self", "result"]
 weeks_columns = ["student_id", "week_id", "behaviour_id", "score"]
 courses_column = "name"
@@ -42,15 +49,27 @@ def convert_scores(info):
     :param info: this will be a dictionary
     :return: will be dataframe
     """
-    pass
+    new_list = [re.split(', | -  |: |/', i) for i in info]
+    student_scores = []
+    for student in new_list[3:]:
+        psyc_score = int(student[2])
+        psyc_max = int(student[3])
+        pres_score = int(student[5])
+        pres_max = int(student[6])
+        student_scores.append([psyc_score, psyc_max, pres_score, pres_max])
+    return pd.DataFrame(student_scores)
 
 
 def convert_pi(info):
     """
-    :param info: this will be a dictionary
+    :param info: this will be a dataframe
     :return: will be dataframe
     """
-    pass
+    info["phone_number"] = info["phone_number"].fillna("0")
+    temp = [re.sub('[^+0-9]', '', i) for i in info.get("phone_number").values.tolist() if i is not None]
+    new = pd.DataFrame(temp, columns=["phone_number"])
+    info.update(new)
+    return info
 
 
 def convert_weeks(info):
@@ -96,10 +115,24 @@ def convert_courses(info):
                 to_load_courses.update({courses_column: info[entry]})
                 courses.append(info[entry])
             else:
-                pass
+                continue
     return pd.DataFrame(to_load_courses, index=[0])
 
 
-temp = convert_weeks(dataCsv)
+# temp = convert_weeks(dataCsv)
 # pprint(convert_si(data))
-print(temp)
+# print(temp)
+
+# pprint(convert_courses(data))
+# print(courses)
+# pprint(convert_pi(data))
+test = convert_scores(data)
+test4 = ['Wednesday 18 September 2019',
+         'London Academy',
+         '',
+         'PAULITA SIMMONDS -  Psychometrics: 53/100, Presentation: 14/32', ]
+output = pd.DataFrame([[53, 100, 14, 32]])
+print(convert_scores(test4))
+print(output)
+# print(test)
+

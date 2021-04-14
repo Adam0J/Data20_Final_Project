@@ -32,4 +32,13 @@ def extract_json(key):
         return "That is not a JSON file."
 
 
+def extract_txt(key):
+    if re.findall(".txt$", key):
+        s3_object = s3.get_object(
+            Bucket=bucket_name,
+            Key=key)
+        strbody = s3_object['Body'].read()
+        return strbody.decode('utf-8').splitlines()
+    else:
+        return "That is not a TEXT file."
 
