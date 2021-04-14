@@ -29,12 +29,19 @@ class TransformationTests(unittest.TestCase):
         pd.testing.assert_frame_equal(transformations.convert_si(test_dict), pd.DataFrame(output_dict, index=[0]))
 
     def test_convert_scores(self):
+
+
+    def test_convert_pi(self):
+        pass
+
+
         test = ['Wednesday 18 September 2019',
                 'London Academy',
                 '',
                 'PAULITA SIMMONDS -  Psychometrics: 53/100, Presentation: 14/32']
         output = pd.DataFrame([[53, 100, 14, 32]])
         pd.testing.assert_frame_equal(transformations.convert_scores(test), output)
+
 
     def test_convert_weeks(self):
         test_dict = {"name": "Pyotr De Zuani", "trainer": "Trixie Orange",

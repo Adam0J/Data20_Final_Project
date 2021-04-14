@@ -1,17 +1,18 @@
 from sqlalchemy import *
 
+with open("credentials.txt") as f1, open("config.txt") as f2:
+    line_file1 = f1.readlines()
+    line_file2 = f2.readlines()
+    converted = []
+    for element in line_file1:
+        converted.append(element.strip())
+    for element in line_file2:
+        converted.append(element.strip())
 
-file = open("credentials.txt")
-all_lines = file.readlines()
-converted = []
-for element in all_lines:
-    converted.append(element.strip())
-file.close()
-
-server = converted[0]
-database = converted[1]
-user = converted[2]
-password = converted[3]
+user = converted[0]
+password = converted[1]
+server = converted[2]
+database = converted[3]
 driver = converted[4]
 engine = create_engine(f"mssql+pyodbc://{user}:{password}@{server}/{database}?driver={driver}")
 
