@@ -6,14 +6,21 @@ from pprint import pprint
 import re
 import logging
 import time
+import itertools
 import re
+
+
+data = extract_files.extract_json("Talent/10384.json")
+dataCsv = extract_files.extract_csv("Academy/Data_28_2019-02-18.csv")
+
 
 logging.basicConfig(level=logging.INFO)
 
 pd.set_option("display.max_rows", None, "display.max_columns", None)
-data = extract_files.extract_txt("Talent/Sparta Day 18 September 2019.txt")
+
 pprint(data, sort_dicts=False)
 si_columns = ["name", "date", "self_development", "geo_flex", "financial_support_self", "result"]
+weeks_columns = ["student_id", "week_id", "behaviour_id", "score"]
 courses_column = "name"
 courses = []
 
@@ -70,7 +77,28 @@ def convert_weeks(info):
     :param info: this will be a dataframe
     :return: should be dataframe
     """
-    pass
+    # format the dataframe from wide to long
+    new_df = info.melt(id_vars=["name", "trainer"], var_name="behaviours", value_name="score")
+
+    # calculating number of weeks in the file
+    weeks = int(len(new_df) / 6)
+    number_of_weeks = int(weeks / len(info))
+
+    # iterating week_id across all students
+    lst = range(1, number_of_weeks + 1)
+    wks_col = list(itertools.chain.from_iterable(itertools.repeat(x, int((len(new_df))/number_of_weeks)) for x in lst))
+
+    # adding week_id column
+    new_df["week_id"] = wks_col
+
+    # Removing .._W<number> from behaviours
+    behaviours = ["Analytic", "Independent", "Determined", "Professional", "Studious", "Imaginative"]
+    new_b = behaviours * int(len(new_df) / 6)
+    new_df2 = pd.DataFrame(new_b, columns=["behaviours"])
+    new_df.update(new_df2)
+
+    # return dataframe and drop students who dropped out
+    return new_df.sort_values(by=["name", "week_id"]).dropna()
 
 
 def convert_courses(info):
@@ -91,6 +119,10 @@ def convert_courses(info):
     return pd.DataFrame(to_load_courses, index=[0])
 
 
+# temp = convert_weeks(dataCsv)
+# pprint(convert_si(data))
+# print(temp)
+
 # pprint(convert_courses(data))
 # print(courses)
 # pprint(convert_pi(data))
@@ -103,3 +135,4 @@ output = pd.DataFrame([[53, 100, 14, 32]])
 print(convert_scores(test4))
 print(output)
 # print(test)
+
