@@ -13,7 +13,6 @@ import re
 data = extract_files.extract_json("Talent/10384.json")
 dataCsv = extract_files.extract_csv("Academy/Data_28_2019-02-18.csv")
 
-
 logging.basicConfig(level=logging.INFO)
 
 pd.set_option("display.max_rows", None, "display.max_columns", None)
@@ -116,6 +115,3 @@ def convert_courses(info):
             else:
                 continue
     return pd.DataFrame(to_load_courses, index=[0])
-
-
-
