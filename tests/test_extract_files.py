@@ -13,5 +13,5 @@ class ExtractTests(unittest.TestCase):
         self.assertEqual(test, "That is not a JSON file.")
 
     def test_txt(self):
-        test = extract_files.extract_txt("test.txt")
+        test = extract_files.extract_txt("test.csv")
         self.assertEqual(test, "That is not a TXT file.")
