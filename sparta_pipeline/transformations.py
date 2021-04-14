@@ -118,20 +118,4 @@ def convert_courses(info):
     return pd.DataFrame(to_load_courses, index=[0])
 
 
-# temp = convert_weeks(dataCsv)
-# pprint(convert_si(data))
-# print(temp)
-
-# pprint(convert_courses(data))
-# print(courses)
-# pprint(convert_pi(data))
-test = convert_scores(data)
-test4 = ['Wednesday 18 September 2019',
-         'London Academy',
-         '',
-         'PAULITA SIMMONDS -  Psychometrics: 53/100, Presentation: 14/32', ]
-output = pd.DataFrame([[53, 100, 14, 32]])
-print(convert_scores(test4))
-print(output)
-# print(test)
 
