@@ -49,4 +49,10 @@ class TransformationTests(unittest.TestCase):
     #     pd.testing.assert_frame_equal(transformations.convert_weeks(test_pd), result_pd)
 
     def test_convert_courses(self):
-        pass
+        test_dict = {"name": "Frederico D'Ambrosio", "date": "21/08/2019",
+                     "tech_self_score": {'Python': 4, 'C#': 4, 'Java': 2, 'C++': 3},
+                     'strengths': ['Patient', 'Problem Solving'],
+                     'weaknesses': ['Overbearing', 'Indifferent'], "self_development": "Yes",
+                     "geo_flex": "Yes", "financial_support_self": "No", "result": "Pass", "course_interest": "Data"}
+        output_dict = {"name": "Data"}
+        pd.testing.assert_frame_equal(transformations.convert_courses(test_dict), pd.DataFrame(output_dict, index=[0]))
