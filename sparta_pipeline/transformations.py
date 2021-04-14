@@ -5,11 +5,13 @@ import boto3
 from pprint import pprint
 import logging
 import time
+import itertools
+
 
 logging.basicConfig(level=logging.INFO)
 data = extract_files.extract_json("Talent/10384.json")
 dataCsv = extract_files.extract_csv("Academy/Data_28_2019-02-18.csv")
-pprint(data, sort_dicts=False)
+# pprint(data, sort_dicts=False)
 si_columns = ["name", "date", "self_development", "geo_flex", "financial_support_self", "result"]
 weeks_columns = ["student_id", "week_id", "behaviour_id", "score"]
 courses_column = "name"
@@ -51,17 +53,33 @@ def convert_pi(info):
     pass
 
 
-def convert_weeks(info):  # WORK ON THIS TOMORROW!
+def convert_weeks(info):
     """
     :param info: this will be a dataframe
     :return: should be dataframe
     """
-    # use multiples of indexes once you have a list to get the values per week
-    for i in info:
-        if i not in ["name", "trainer"]:
-            # print column header, column type, last letter of header
-            print(i, type(i), i[-1])
-    
+    # format the dataframe from wide to long
+    new_df = info.melt(id_vars=["name", "trainer"], var_name="behaviours", value_name="score")
+
+    # calculating number of weeks in the file
+    weeks = int(len(new_df) / 6)
+    number_of_weeks = int(weeks / len(info))
+
+    # iterating week_id across all students
+    lst = range(1, number_of_weeks + 1)
+    wks_col = list(itertools.chain.from_iterable(itertools.repeat(x, int((len(new_df))/number_of_weeks)) for x in lst))
+
+    # adding week_id column
+    new_df["week_id"] = wks_col
+
+    # Removing .._W<number> from behaviours
+    behaviours = ["Analytic", "Independent", "Determined", "Professional", "Studious", "Imaginative"]
+    new_b = behaviours * int(len(new_df) / 6)
+    new_df2 = pd.DataFrame(new_b, columns=["behaviours"])
+    new_df.update(new_df2)
+
+    # return dataframe and drop students who dropped out
+    return new_df.sort_values(by=["name", "week_id"]).dropna()
 
 
 def convert_courses(info):
@@ -82,5 +100,6 @@ def convert_courses(info):
     return pd.DataFrame(to_load_courses, index=[0])
 
 
-convert_weeks(dataCsv)
+temp = convert_weeks(dataCsv)
 # pprint(convert_si(data))
+print(temp)
