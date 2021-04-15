@@ -49,8 +49,11 @@ def load_weeks():
     pass
 
 
-def load_techs():
-    pass
+def load_tech_types_table():
+    techs = ['C#', 'C++', 'Java', 'JavaScript', 'PHP', 'Python', 'R', 'Ruby', 'SPSS']
+    df = pd.DataFrame(techs, columns=['name'])
+    logging.info(df)
+    df.to_sql('tech_types', engine, index=False, if_exists="append")
 
 
 def load_self_score():
@@ -89,7 +92,8 @@ def load_personal_information():
 
 def main():
     # load_courses_table()
-    load_weaknesses()
+    # load_weaknesses()
+    load_tech_types_table()
 
 
 main()
