@@ -37,4 +37,52 @@ def load_classes_table():
     pass
 
 
-test = load_courses_table()
+def load_student_information():
+    pass
+
+
+def load_behaviours():
+    pass
+
+
+def load_weeks():
+    pass
+
+
+def load_techs():
+    pass
+
+
+def load_self_score():
+    pass
+
+
+def load_strengths():
+    pass
+
+
+def load_student_strengths():
+    pass
+
+
+def load_weaknesses():
+    pass
+
+
+def load_student_weaknesses():
+    pass
+
+
+def load_scores():
+    pass
+
+
+def load_personal_information():
+    pass
+
+
+def main():
+    load_courses_table()
+
+
+main()
