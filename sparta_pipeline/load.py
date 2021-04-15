@@ -4,16 +4,23 @@ from sqlalchemy import *
 import logging
 import pandas as pd
 import boto3
+import re
+from pprint import pprint
 
 logging.basicConfig(level=logging.INFO)
+s3 = boto3.client('s3')
 
 bucket_name = 'data20-final-project'
 s3_resource = boto3.resource('s3')
 bucket = s3_resource.Bucket(bucket_name)
 contents = bucket.objects.all()
+students = [i.key for i in contents if re.findall(".json$", i.key)]
 Keys = [file.key for file in contents]
 
-with open("../credentials.txt") as f1, open("config.txt") as f2:
+
+
+with open("..\\credentials.txt") as f1, open("..\\config.ini") as f2:
+
     line_file1 = f1.readlines()
     line_file2 = f2.readlines()
     converted = []
@@ -57,7 +64,18 @@ def load_classes_table():
 
 
 def load_student_information():
-    pass
+    student_id = []
+    si = []
+    for i in students[1:21]:
+        si.append(transformations.convert_si(extract_files.extract_json(i)))
+        student_id.append(re.split("[/.]", i)[1])
+    df = pd.concat(si).reset_index()
+    df2 = pd.DataFrame(id, columns=["student_id"])
+    output = pd.concat([df2, df], axis=1)
+    del output["index"]
+    # logging.info(df)
+    # logging.info(df2)
+    logging.info(output)
 
 
 def load_behaviours():
@@ -80,7 +98,10 @@ def load_self_score():
 
 
 def load_strengths():
-    strengths = ['Charisma', 'Patient', 'Curious', 'Problem Solving', 'Courteous', 'Independent', 'Passionate', 'Versatile', 'Rational', 'Collaboration', 'Ambitious', 'Reliable', 'Altruism', 'Empathy', 'Listening', 'Organisation', 'Consistent', 'Efficient', 'Determined', 'Composure', 'Competitive', 'Perfectionism', 'Innovative', 'Creative', 'Critical Thinking']
+    strengths = ['Charisma', 'Patient', 'Curious', 'Problem Solving', 'Courteous', 'Independent', 'Passionate',
+                 'Versatile', 'Rational', 'Collaboration', 'Ambitious', 'Reliable', 'Altruism', 'Empathy', 'Listening',
+                 'Organisation', 'Consistent', 'Efficient', 'Determined', 'Composure', 'Competitive', 'Perfectionism',
+                 'Innovative', 'Creative', 'Critical Thinking']
     df = pd.DataFrame(strengths, columns=['name'])
     logging.info(df)
     df.to_sql('strength_types', engine, index=False, if_exists="append")
@@ -115,7 +136,7 @@ def load_personal_information():
    
 
 def main():
-    load_courses_table()
+    load_student_information()
 
 
 main()

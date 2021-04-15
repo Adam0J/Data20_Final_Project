@@ -8,10 +8,11 @@ import logging
 import time
 import itertools
 import re
+from datetime import datetime
 
 data = extract_files.extract_json("Talent/10384.json")
 dataCsv = extract_files.extract_csv("Academy/Data_28_2019-02-18.csv")
-
+data_app = 'Talent/Feb2019Applicants.csv'
 logging.basicConfig(level=logging.INFO)
 
 pd.set_option("display.max_rows", None, "display.max_columns", None)
@@ -43,7 +44,7 @@ def convert_si(info):
 
 def convert_scores(info):
     """
-    :param info: this will be a dictionary
+    :param info: this will be a s3 key
     :return: will be dataframe
     """
     new_list = [re.split(', | -  |: |/', i) for i in info]
@@ -57,15 +58,25 @@ def convert_scores(info):
     return pd.DataFrame(student_scores)
 
 
-def convert_pi(info):
+def convert_pi(key):
     """
-    :param info: this will be a dataframe
+    :param key: this will be an s3 key
     :return: will be dataframe
     """
+    info = extract_files.extract_csv(key)
     info["phone_number"] = info["phone_number"].fillna("0")
+    info["invited_date"] = info["invited_date"].fillna("Not")
+    info["month"] = info["month"].fillna("Invited")
+
     temp = [re.sub('[^+0-9]', '', i) for i in info.get("phone_number").values.tolist() if i is not None]
-    new = pd.DataFrame(temp, columns=["phone_number"])
+    temp_day = [str(int(i)) if isinstance(i, float) else i for i in info.get("invited_date").values.tolist()]
+    temp_month = [i for i in info.get("month").values.tolist()]
+    temp_date = [datetime.strptime(x+" "+y, "%d %B %Y").date() if x+y != "NotInvited" else x+" "+y
+                 for x, y in zip(temp_day, temp_month)]
+
+    new = pd.DataFrame({"phone_number": temp, "invited_date": temp_date})
     info.update(new)
+    del info["month"]
     return info
 
 
