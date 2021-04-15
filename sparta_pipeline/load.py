@@ -15,8 +15,7 @@ s3_resource = boto3.resource('s3')
 bucket = s3_resource.Bucket(bucket_name)
 contents = bucket.objects.all()
 students = [i.key for i in contents if re.findall(".json$", i.key)]
-Keys = [file.key for file in contents]
-
+courses = [i.key for i in contents if re.findall(".csv$", i.key) and re.findall("^Academy", i.key)]
 
 
 with open("..\\credentials.txt") as f1, open("..\\config.ini") as f2:
@@ -41,24 +40,12 @@ meta = MetaData()
 
 
 def load_courses_table():
-    courses = []
-    for key in Keys:
-        if 'Academy' in key:
-            temp = key[8:-15].split('_')
-            if temp[0] not in courses:
-                courses.append(temp[0])
-    df = pd.DataFrame(courses, columns=['name'])
-    logging.info(df)
-    df.to_sql('courses', engine, index=False, if_exists="append")
-
-
-def load_classes_table():
-    classes = []
-    for key in Keys:
-        if 'Academy' in key:
-            classes.append(key[8:-15])
-
-    df = pd.DataFrame(classes, columns=['name_number'])
+    list_courses = []
+    for key in courses:
+        temp = key[8:-15].split('_')
+        course_code = temp[0] + ' ' + temp[1]
+        list_courses.append(course_code)
+    df = pd.DataFrame(list_courses, columns=['name_number'])
     logging.info(df)
     df.to_sql('classes', engine, index=False, if_exists="append")
 
@@ -70,7 +57,7 @@ def load_student_information():
         si.append(transformations.convert_si(extract_files.extract_json(i)))
         student_id.append(re.split("[/.]", i)[1])
     df = pd.concat(si).reset_index()
-    df2 = pd.DataFrame(id, columns=["student_id"])
+    df2 = pd.DataFrame(student_id, columns=["student_id"])
     output = pd.concat([df2, df], axis=1)
     del output["index"]
     # logging.info(df)
@@ -136,7 +123,7 @@ def load_personal_information():
    
 
 def main():
-    load_student_information()
+    load_courses_table()
 
 
 main()
