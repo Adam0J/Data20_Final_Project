@@ -3,8 +3,15 @@ from sparta_pipeline import transformations
 from sqlalchemy import *
 import logging
 import pandas as pd
+import boto3
 
 logging.basicConfig(level=logging.INFO)
+
+bucket_name = 'data20-final-project'
+s3_resource = boto3.resource('s3')
+bucket = s3_resource.Bucket(bucket_name)
+contents = bucket.objects.all()
+Keys = [file.key for file in contents]
 
 with open("credentials.txt") as f1, open("config.txt") as f2:
     line_file1 = f1.readlines()
@@ -34,7 +41,14 @@ def load_courses_table():
 
 
 def load_classes_table():
-    pass
+    classes = []
+    for key in Keys:
+        if 'Academy' in key:
+            classes.append(key[8:-15])
+
+    df = pd.DataFrame(classes, columns=['name_number'])
+    logging.info(df)
+    df.to_sql('classes', engine, index=False, if_exists="append")
 
 
 def load_student_information():
@@ -99,5 +113,7 @@ def main():
     # load_courses_table()
     # load_weaknesses()
     load_tech_types_table()
+    load_classes_table()
+
 
 main()
