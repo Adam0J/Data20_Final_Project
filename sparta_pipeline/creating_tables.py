@@ -150,7 +150,7 @@ def create_sparta_scores():
 def create_personal_information():
     Table(
         'personal_information', meta,
-        Column('student_id', Integer, ForeignKey("sparta_day_information.student_id")),
+        Column('student_id', Integer, ForeignKey("sparta_day_information.student_id"), primary_key=True),
         Column('full_name', String),
         Column('gender', String),
         Column('dob', Date),
