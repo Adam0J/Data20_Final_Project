@@ -9,7 +9,6 @@ import time
 import itertools
 import re
 
-
 data = extract_files.extract_json("Talent/10384.json")
 dataCsv = extract_files.extract_csv("Academy/Data_28_2019-02-18.csv")
 

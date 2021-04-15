@@ -75,7 +75,10 @@ def load_self_score():
 
 
 def load_strengths():
-    pass
+    strengths = ['Charisma', 'Patient', 'Curious', 'Problem Solving', 'Courteous', 'Independent', 'Passionate', 'Versatile', 'Rational', 'Collaboration', 'Ambitious', 'Reliable', 'Altruism', 'Empathy', 'Listening', 'Organisation', 'Consistent', 'Efficient', 'Determined', 'Composure', 'Competitive', 'Perfectionism', 'Innovative', 'Creative', 'Critical Thinking']
+    df = pd.DataFrame(strengths, columns=['name'])
+    logging.info(df)
+    df.to_sql('strength_types', engine, index=False, if_exists="append")
 
 
 def load_student_strengths():
@@ -107,6 +110,10 @@ def load_personal_information():
    
 
 def main():
+    # load_courses_table()
+    # load_weaknesses()
+    load_tech_types_table()
     load_classes_table()
+
 
 main()

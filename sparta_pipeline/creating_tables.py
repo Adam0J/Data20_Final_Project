@@ -1,3 +1,4 @@
+import pandas as pd
 from sqlalchemy import *
 
 with open("credentials.txt") as f1, open("config.txt") as f2:
@@ -168,3 +169,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
