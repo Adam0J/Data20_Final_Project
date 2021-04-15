@@ -3,10 +3,19 @@ from sparta_pipeline import transformations
 from sqlalchemy import *
 import logging
 import pandas as pd
+import boto3
+import re
+from pprint import pprint
 
 logging.basicConfig(level=logging.INFO)
+s3 = boto3.client('s3')
+bucket_name = 'data20-final-project'
+s3_resource = boto3.resource('s3')
+bucket = s3_resource.Bucket(bucket_name)
+contents = bucket.objects.all()
+students = [i.key for i in contents if re.findall(".json$", i.key)]
 
-with open("credentials.txt") as f1, open("config.txt") as f2:
+with open("credentials.txt") as f1, open("..\\config.ini") as f2:
     line_file1 = f1.readlines()
     line_file2 = f2.readlines()
     converted = []
@@ -20,10 +29,10 @@ password = converted[1]
 server = converted[2]
 database = converted[3]
 driver = converted[4]
-engine = create_engine(f"mssql+pyodbc://{user}:{password}@{server}/{database}?driver={driver}")
-
-connection = engine.connect()
-meta = MetaData()
+# engine = create_engine(f"mssql+pyodbc://{user}:{password}@{server}/{database}?driver={driver}")
+#
+# connection = engine.connect()
+# meta = MetaData()
 
 
 def load_courses_table():
@@ -38,8 +47,18 @@ def load_classes_table():
 
 
 def load_student_information():
-    pass
-
+    student_id = []
+    si = []
+    for i in students[1:21]:
+        si.append(transformations.convert_si(extract_files.extract_json(i)))
+        student_id.append(re.split("[/.]", i)[1])
+    df = pd.concat(si).reset_index()
+    df2 = pd.DataFrame(id, columns=["student_id"])
+    output = pd.concat([df2, df], axis=1)
+    del output["index"]
+    # logging.info(df)
+    # logging.info(df2)
+    logging.info(output)
 
 def load_behaviours():
     pass
@@ -82,7 +101,7 @@ def load_personal_information():
 
 
 def main():
-    load_courses_table()
+    load_student_information()
 
 
 main()
