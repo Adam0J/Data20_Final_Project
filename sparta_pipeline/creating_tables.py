@@ -1,3 +1,4 @@
+import pandas as pd
 from sqlalchemy import *
 
 with open("credentials.txt") as f1, open("config.txt") as f2:
@@ -136,13 +137,13 @@ def create_personal_information():
         Column('name', String),
         Column('invited_date', Date),
         Column('gender', String),
-        Column('date_of_birth', Date),
+        Column('dob', Date),
         Column('email', String),
         Column('city', String),
         Column('address', String),
         Column('postcode', String),
         Column('phone_number', String),
-        Column('university', String),
+        Column('uni', String),
         Column('degree', String),
         Column('month', String),
         Column('invited_by', String)
@@ -168,3 +169,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

@@ -10,7 +10,6 @@ import itertools
 import re
 from datetime import datetime
 
-
 data = extract_files.extract_json("Talent/10384.json")
 dataCsv = extract_files.extract_csv("Academy/Data_28_2019-02-18.csv")
 data_app = 'Talent/Feb2019Applicants.csv'
