@@ -49,8 +49,11 @@ def load_weeks():
     pass
 
 
-def load_techs():
-    pass
+def load_tech_types_table():
+    techs = ['C#', 'C++', 'Java', 'JavaScript', 'PHP', 'Python', 'R', 'Ruby', 'SPSS']
+    df = pd.DataFrame(techs, columns=['name'])
+    logging.info(df)
+    df.to_sql('tech_types', engine, index=False, if_exists="append")
 
 
 def load_self_score():
@@ -66,7 +69,13 @@ def load_student_strengths():
 
 
 def load_weaknesses():
-    pass
+    weakness_types = [
+        'Distracted', 'Impulsive', 'Introverted', 'Overbearing', 'Chatty', 'Indifferent', 'Anxious', 'Perfectionist',
+        'Sensitive', 'Controlling', 'Immature', 'Impatient', 'Conventional', 'Undisciplined', 'Passive', 'Intolerant',
+        'Chaotic', 'Selfish', 'Slow', 'Competitive', 'Critical', 'Indecisive', 'Procrastination', 'Stubborn']
+    df_weakness_types = pd.DataFrame(weakness_types, columns=['name'])
+    logging.info(df_weakness_types)
+    df_weakness_types.to_sql('weakness_types', engine, index=False, if_exists="append")
 
 
 def load_student_weaknesses():
@@ -84,7 +93,8 @@ def load_personal_information():
    
 
 def main():
-    load_personal_information()
-
+    # load_courses_table()
+    # load_weaknesses()
+    load_tech_types_table()
 
 main()
