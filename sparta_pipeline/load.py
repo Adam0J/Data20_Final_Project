@@ -34,8 +34,13 @@ meta = MetaData()
 
 
 def load_courses_table():
-    course = ['Business', 'Data', 'Engineering']
-    df = pd.DataFrame(course, columns=['name'])
+    courses = []
+    for key in Keys:
+        if 'Academy' in key:
+            temp = key[8:-15].split('_')
+            if temp[0] not in courses:
+                courses.append(temp[0])
+    df = pd.DataFrame(courses, columns=['name'])
     logging.info(df)
     df.to_sql('courses', engine, index=False, if_exists="append")
 
@@ -110,10 +115,7 @@ def load_personal_information():
    
 
 def main():
-    # load_courses_table()
-    # load_weaknesses()
-    load_tech_types_table()
-    load_classes_table()
+    load_courses_table()
 
 
 main()
