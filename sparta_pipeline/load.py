@@ -87,13 +87,14 @@ def load_scores():
 
 
 def load_personal_information():
-    pass
-
+    data = extract_files.extract_csv('Talent/July2019Applicants.csv')
+    transformed_data = transformations.convert_pi(data)
+    del transformed_data["id"]
+   
 
 def main():
     # load_courses_table()
     # load_weaknesses()
     load_tech_types_table()
-
 
 main()
