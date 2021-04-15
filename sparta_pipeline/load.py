@@ -17,7 +17,10 @@ contents = bucket.objects.all()
 students = [i.key for i in contents if re.findall(".json$", i.key)]
 Keys = [file.key for file in contents]
 
-with open("credentials.txt") as f1, open("..\\config.ini") as f2:
+
+
+with open("..\\credentials.txt") as f1, open("..\\config.ini") as f2:
+
     line_file1 = f1.readlines()
     line_file2 = f2.readlines()
     converted = []
