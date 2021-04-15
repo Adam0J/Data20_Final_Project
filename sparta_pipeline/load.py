@@ -13,7 +13,7 @@ bucket = s3_resource.Bucket(bucket_name)
 contents = bucket.objects.all()
 Keys = [file.key for file in contents]
 
-with open("credentials.txt") as f1, open("config.txt") as f2:
+with open("../credentials.txt") as f1, open("config.txt") as f2:
     line_file1 = f1.readlines()
     line_file2 = f2.readlines()
     converted = []

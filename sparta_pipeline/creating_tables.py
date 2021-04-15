@@ -1,21 +1,24 @@
 import pandas as pd
 from sqlalchemy import *
+from configparser import ConfigParser
 
-with open("credentials.txt") as f1, open("config.txt") as f2:
+# Read config.ini file
+config_object = ConfigParser()
+config_object.read("config.ini")
+
+# Get the userinfo
+userinfo = config_object["USERINFO"]
+
+with open("../credentials.txt") as f1:
     line_file1 = f1.readlines()
-    line_file2 = f2.readlines()
     converted = []
     for element in line_file1:
-        converted.append(element.strip())
-    for element in line_file2:
         converted.append(element.strip())
 
 user = converted[0]
 password = converted[1]
-server = converted[2]
-database = converted[3]
-driver = converted[4]
-engine = create_engine(f"mssql+pyodbc://{user}:{password}@{server}/{database}?driver={driver}")
+
+engine = create_engine(f"mssql+pyodbc://{user}:{password}@{userinfo['server']}/{userinfo['database']}?driver={userinfo['driver']}")
 
 connection = engine.connect()
 meta = MetaData()
