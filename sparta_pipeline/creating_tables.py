@@ -37,7 +37,7 @@ def create_staff():
 def create_contacts():
     Table(
         "contact_details", meta,
-        Column("student_id", Integer, ForeignKey("personal_information.student_id")),
+        Column("student_id", Integer, ForeignKey("personal_information.student_id"), primary_key=True),
         Column('email', String),
         Column('city', String),
         Column('address', String),
@@ -139,7 +139,7 @@ def create_student_weaknesses():
 def create_sparta_scores():
     Table(
         'sparta_day_scores', meta,
-        Column('student_id', Integer, ForeignKey("sparta_day_information.student_id")),
+        Column('student_id', Integer, ForeignKey("sparta_day_information.student_id"), primary_key=True),
         Column('psychometrics_score', Integer),
         Column('psychometrics_max', Integer),
         Column('presentations_score', Integer),
