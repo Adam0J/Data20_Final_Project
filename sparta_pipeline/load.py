@@ -106,13 +106,19 @@ def load_self_score():
 
 
 def load_strengths():
-    strengths = ['Charisma', 'Patient', 'Curious', 'Problem Solving', 'Courteous', 'Independent', 'Passionate',
-                 'Versatile', 'Rational', 'Collaboration', 'Ambitious', 'Reliable', 'Altruism', 'Empathy', 'Listening',
-                 'Organisation', 'Consistent', 'Efficient', 'Determined', 'Composure', 'Competitive', 'Perfectionism',
-                 'Innovative', 'Creative', 'Critical Thinking']
-    df = pd.DataFrame(strengths, columns=['name'])
-    logging.info(df)
-    df.to_sql('strength_types', engine, index=False, if_exists="append")
+    list_strengths = []
+    for student in students[1:21]:
+        # check strengths for each student in JSON file
+        for strength in extract_files.extract_json(student)["strengths"]:
+            # append strength if it's not already in the list
+            if strength not in list_strengths:
+                list_strengths.append(strength)
+            else:
+                pass
+    # convert to DataFrame to be loaded into table
+    df_strengths = pd.DataFrame(list_strengths, columns=['name'])
+    logging.info(df_strengths)
+    # df.to_sql('strength_types', engine, index=False, if_exists="append")
 
 
 def load_student_strengths():
@@ -152,13 +158,13 @@ def load_personal_information():
 def main():
     # load_courses_table()
     # load_weaknesses()
-
-    start = time.time()
-    # load_student_information()
-    logging.info(load_student_information()[0])
-    # logging.info(load_student_information()[1])
-    end = time.time()
-    print(end - start)
+    load_strengths()
+    # start = time.time()
+    # # load_student_information()
+    # logging.info(load_student_information()[0])
+    # # logging.info(load_student_information()[1])
+    # end = time.time()
+    # print(end - start)
 
 
 main()
