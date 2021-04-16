@@ -5,6 +5,7 @@ import logging
 import pandas as pd
 import boto3
 import re
+from configparser import ConfigParser
 from pprint import pprint
 
 logging.basicConfig(level=logging.INFO)
@@ -15,48 +16,37 @@ s3_resource = boto3.resource('s3')
 bucket = s3_resource.Bucket(bucket_name)
 contents = bucket.objects.all()
 students = [i.key for i in contents if re.findall(".json$", i.key)]
-Keys = [file.key for file in contents]
+courses = [i.key for i in contents if re.findall(".csv$", i.key) and re.findall("^Academy", i.key)]
 
+# Read config.ini file
+config_object = ConfigParser()
+config_object.read("../config.ini")
 
-with open("..\\credentials.txt") as f1, open("..\\config.ini") as f2:
+# Get the userinfo
+userinfo = config_object["USERINFO"]
+
+with open("..\\credentials.txt") as f1:
     line_file1 = f1.readlines()
-    line_file2 = f2.readlines()
     converted = []
     for element in line_file1:
         converted.append(element.strip())
-    for element in line_file2:
-        converted.append(element.strip())
+
 
 user = converted[0]
 password = converted[1]
-server = converted[2]
-database = converted[3]
-driver = converted[4]
+engine = create_engine(f"mssql+pyodbc://{user}:{password}@{userinfo['server']}/{['database']}?driver={['driver']}")
 
-# engine = create_engine(f"mssql+pyodbc://{user}:{password}@{server}/{database}?driver={driver}")
 # connection = engine.connect()
 # meta = MetaData()
 
 
 def load_courses_table():
-    courses = []
-    for key in Keys:
-        if 'Academy' in key:
-            temp = key[8:-15].split('_')
-            if temp[0] not in courses:
-                courses.append(temp[0])
-    df = pd.DataFrame(courses, columns=['name'])
-    logging.info(df)
-    df.to_sql('courses', engine, index=False, if_exists="append")
-
-
-def load_classes_table():
-    classes = []
-    for key in Keys:
-        if 'Academy' in key:
-            classes.append(key[8:-15])
-
-    df = pd.DataFrame(classes, columns=['name_number'])
+    list_courses = []
+    for key in courses:
+        temp = key[8:-15].split('_')
+        course_code = temp[0] + ' ' + temp[1]
+        list_courses.append(course_code)
+    df = pd.DataFrame(list_courses, columns=['name_number'])
     logging.info(df)
     df.to_sql('classes', engine, index=False, if_exists="append")
 
@@ -133,7 +123,7 @@ def load_personal_information():
    
 
 def main():
-    load_student_information()
+    load_courses_table()
 
 
 main()
