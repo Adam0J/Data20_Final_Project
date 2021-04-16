@@ -17,7 +17,7 @@ logging.basicConfig(level=logging.INFO)
 
 pd.set_option("display.max_rows", None, "display.max_columns", None)
 
-si_columns = ["name", "date", "self_development", "geo_flex", "financial_support_self", "result"]
+si_columns = ["name", "date", "self_development", "geo_flex", "financial_support_self", "result", "course_interest"]
 weeks_columns = ["student_id", "week_id", "behaviour_id", "score"]
 courses_column = "name"
 courses = []
@@ -58,12 +58,11 @@ def convert_scores(info):
     return pd.DataFrame(student_scores)
 
 
-def convert_pi(key):
+def convert_pi(info):
     """
-    :param key: this will be an s3 key
+    :param info: this will be a dataframe
     :return: will be dataframe
     """
-    info = extract_files.extract_csv(key)
     info["phone_number"] = info["phone_number"].fillna("0")
     info["invited_date"] = info["invited_date"].fillna("Not")
     info["month"] = info["month"].fillna("Invited")
@@ -136,3 +135,12 @@ def convert_tech_types():
                 to_load_tech_types.extend(data[entry])
     print(to_load_tech_types)
 convert_tech_types()
+
+
+def sparta_location(key):
+    file_contents = extract_files.extract_txt(key)
+    names = [re.split(" - ", i)[0] for i in file_contents[3:]]
+    name_df = pd.DataFrame(names, columns=["full_name"])
+    name_df["location"] = file_contents[1]
+    return name_df
+
