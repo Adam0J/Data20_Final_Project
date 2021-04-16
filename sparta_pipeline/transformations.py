@@ -58,7 +58,6 @@ def convert_scores(info):
     return pd.DataFrame(student_scores)
 
 
-
 def convert_pi(info):
     """
     :param info: this will be a dataframe
@@ -131,6 +130,16 @@ def convert_courses(info):
     return pd.DataFrame(to_load_courses, index=[0])
 
 
+def convert_tech_types():
+    to_load_tech_types = []
+    data = extract_files.extract_json('Talent/10385.json')
+    for entry in data:
+        if entry == 'tech_self_score':
+            if data[entry] not in to_load_tech_types:
+                to_load_tech_types.extend(data[entry])
+    print(to_load_tech_types)
+
+
 def convert_staff_info(key):
     file_contents = extract_files.extract_csv(key)
     # names = [re.split(" - ", i)[0] for i in file_contents[3:]]
@@ -139,7 +148,7 @@ def convert_staff_info(key):
     return file_contents
 
 
-def get_unique_column_info(col, csv_keys):
+def get_unique_column_csv(col, csv_keys):
     new_column = []
     for key in csv_keys:
         data = extract_files.extract_csv(key)
@@ -147,6 +156,17 @@ def get_unique_column_info(col, csv_keys):
         new_column.extend(data[col].unique().tolist())
 
     return set(new_column)
+
+
+def get_unique_column_json(col, json_keys):
+    new_column = []
+    for key in json_keys:
+        data = extract_files.extract_json(key)
+        data = data.get(col)
+        if data:
+            new_column.extend(data)
+    df = pd.DataFrame(set(new_column), columns=[col])
+    return df
 
 
 def sparta_location(key):
