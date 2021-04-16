@@ -35,7 +35,7 @@ with open("..\\credentials.txt") as f1:
 
 user = converted[0]
 password = converted[1]
-engine = create_engine(f"mssql+pyodbc://{user}:{password}@{userinfo['server']}/{['database']}?driver={['driver']}")
+engine = create_engine(f"mssql+pyodbc://{user}:{password}@{userinfo['server']}/{userinfo['database']}?driver={userinfo['driver']}")
 
 connection = engine.connect()
 meta = MetaData()
