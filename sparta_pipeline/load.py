@@ -6,6 +6,7 @@ import pandas as pd
 import boto3
 import re
 from configparser import ConfigParser
+import time
 from pprint import pprint
 
 logging.basicConfig(level=logging.INFO)
@@ -34,7 +35,7 @@ with open("..\\credentials.txt") as f1:
 
 user = converted[0]
 password = converted[1]
-engine = create_engine(f"mssql+pyodbc://{user}:{password}@{userinfo['server']}/{['database']}?driver={['driver']}")
+# engine = create_engine(f"mssql+pyodbc://{user}:{password}@{userinfo['server']}/{['database']}?driver={['driver']}")
 
 # connection = engine.connect()
 # meta = MetaData()
@@ -123,7 +124,10 @@ def load_personal_information():
    
 
 def main():
-    load_courses_table()
+    start = time.time()
+    load_student_information()
+    end = time.time()
+    print(end - start)
 
 
 main()
