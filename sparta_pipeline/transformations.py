@@ -17,10 +17,22 @@ logging.basicConfig(level=logging.INFO)
 
 pd.set_option("display.max_rows", None, "display.max_columns", None)
 
+s3 = boto3.client('s3')
+
+bucket_name = 'data20-final-project'
+s3_resource = boto3.resource('s3')
+s3_client = boto3.client('s3')
+bucket = s3_resource.Bucket(bucket_name)
+contents = bucket.objects.all()
+students = [i.key for i in contents if re.findall(".json$", i.key)]
+courses = [i.key for i in contents if re.findall(".csv$", i.key) and re.findall("^Academy", i.key)]
+applicants = [i.key for i in contents if re.findall(".csv$", i.key) and re.findall("^Talent", i.key)]
+s_day = [i.key for i in contents if re.findall(".txt$", i.key)]
+
 si_columns = ["name", "date", "self_development", "geo_flex", "financial_support_self", "result", "course_interest"]
 weeks_columns = ["student_id", "week_id", "behaviour_id", "score"]
 courses_column = "name"
-courses = []
+
 
 
 def convert_si(info):
@@ -119,6 +131,7 @@ def convert_courses(info):
     :return:
     """
     to_load_courses = {}
+    courses = []
     for entry in info:
         if entry == "course_interest":
             # only add course if it's not already been added
@@ -140,20 +153,12 @@ def convert_tech_types():
     print(to_load_tech_types)
 
 
-def convert_staff_info(key):
-    file_contents = extract_files.extract_csv(key)
-    # names = [re.split(" - ", i)[0] for i in file_contents[3:]]
-    # name_df = pd.DataFrame(names, columns=["full_name"])
-    # name_df["location"] = file_contents[1]
-    return file_contents
-
-
 def get_unique_column_csv(col, csv_keys):
     new_column = []
     for key in csv_keys:
-        data = extract_files.extract_csv(key)
-        data = data.dropna()
-        new_column.extend(data[col].unique().tolist())
+        file = extract_files.extract_csv(key)
+        value = file.dropna()
+        new_column.extend(value[col].unique().tolist())
 
     return set(new_column)
 
@@ -161,10 +166,10 @@ def get_unique_column_csv(col, csv_keys):
 def get_unique_column_json(col, json_keys):
     new_column = []
     for key in json_keys:
-        data = extract_files.extract_json(key)
-        data = data.get(col)
-        if data:
-            new_column.extend(data)
+        file = extract_files.extract_json(key)
+        value = file.get(col)
+        if value:
+            new_column.extend(value)
     df = pd.DataFrame(set(new_column), columns=[col])
     return df
 
@@ -176,3 +181,49 @@ def sparta_location(key):
     name_df["location"] = file_contents[1]
     return name_df
 
+
+def course_trainers():
+    list_courses = []
+    trainers = []
+    for key in courses:
+        trainer = extract_files.extract_csv(key)["trainer"].unique().tolist()[0]
+        temp = key[8:-15].split('_')
+        course_code = temp[0] + ' ' + temp[1]
+
+        list_courses.append([course_code, trainer])
+        trainers.append(trainer)
+
+    df = pd.DataFrame(list_courses, columns=['course_name', 'trainer'])
+
+    return df, set(trainers)
+
+
+def convert_staff_information():
+    talent_names = get_unique_column_csv('invited_by', applicants)
+    trainer_names = course_trainers()[1]
+    df = pd.DataFrame(talent_names, columns=['full_name'])
+    df["team"] = "Talent"
+    df2 = pd.DataFrame(trainer_names, columns=['full_name'])
+    df2["team"] = "Trainer"
+
+    final_df = pd.concat([df, df2]).reset_index()
+    final_df["index"] = final_df.index + 1
+
+    return final_df
+
+
+def staff_to_ids():
+    """
+    Changes the convert_statt_information dataframe from 'full_name' and 'team' to 'full_name', 'team' and 'staff_id'
+    based on the staff table.
+    """
+    staff_info_df = convert_staff_information()
+    course_info_df = course_trainers()[0]
+    staff_course = pd.merge(staff_info_df, course_info_df, left_on="full_name", right_on="trainer", how="right")
+
+    staff_course.drop(["full_name", "team", "trainer"], axis=1, inplace=True)
+    staff_course.rename(columns={"index": "staff_id"}, inplace=True)
+
+    logging.info(staff_course)
+
+staff_to_ids()
