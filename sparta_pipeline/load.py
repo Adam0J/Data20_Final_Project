@@ -100,16 +100,18 @@ def load_weeks():
 
 def load_tech_types_table():
     techs = []
-    
-    for tech in extract_files.extract_json(students)["tech_self_score"]:
-        if tech not in techs:
-            techs.append(tech)
-        else:
-            pass
-    print(techs)
-    df = pd.DataFrame(techs, columns=['name'])
-    logging.info(df)
-    df.to_sql('tech_types', engine, index=False, if_exists="append")
+    temp_info = transformations.get_unique_column_json("tech_self_score", students)
+    print(temp_info)
+
+    # for tech in extract_files.extract_json(students)["tech_self_score"]:
+    #     if tech not in techs:
+    #         techs.append(tech)
+    #     else:
+    #         pass
+    # print(techs)
+    # df = pd.DataFrame(techs, columns=['name'])
+    # logging.info(df)
+    # df.to_sql('tech_types', engine, index=False, if_exists="append")
 load_tech_types_table()
 
 

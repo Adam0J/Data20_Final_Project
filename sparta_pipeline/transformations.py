@@ -148,7 +148,7 @@ def convert_staff_info(key):
     return file_contents
 
 
-def get_unique_column_info(col, csv_keys):
+def get_unique_column_csv(col, csv_keys):
     new_column = []
     for key in csv_keys:
         data = extract_files.extract_csv(key)
@@ -156,6 +156,17 @@ def get_unique_column_info(col, csv_keys):
         new_column.extend(data[col].unique().tolist())
 
     return set(new_column)
+
+
+def get_unique_column_json(col, json_keys):
+    new_column = []
+    for key in json_keys:
+        data = extract_files.extract_json(key)
+        data = data.get(col)
+        if data:
+            new_column.extend(data)
+    df = pd.DataFrame(set(new_column), columns=[col])
+    return df
 
 
 def sparta_location(key):
