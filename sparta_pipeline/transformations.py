@@ -125,3 +125,14 @@ def convert_courses(info):
             else:
                 continue
     return pd.DataFrame(to_load_courses, index=[0])
+
+
+def convert_tech_types():
+    to_load_tech_types = []
+    data = extract_files.extract_json('Talent/10385.json')
+    for entry in data:
+        if entry == 'tech_self_score':
+            if data[entry] not in to_load_tech_types:
+                to_load_tech_types.extend(data[entry])
+    print(to_load_tech_types)
+convert_tech_types()
