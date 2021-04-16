@@ -6,6 +6,7 @@ import pandas as pd
 import boto3
 import re
 from configparser import ConfigParser
+import time
 from pprint import pprint
 import json
 
@@ -20,6 +21,8 @@ contents = bucket.objects.all()
 students = [i.key for i in contents if re.findall(".json$", i.key)]
 courses = [i.key for i in contents if re.findall(".csv$", i.key) and re.findall("^Academy", i.key)]
 applicants = [i.key for i in contents if re.findall(".csv$", i.key) and re.findall("^Talent", i.key)]
+s_day = [i.key for i in contents if re.findall(".txt$", i.key)]
+
 
 # Read config.ini file
 config_object = ConfigParser()
@@ -37,15 +40,17 @@ with open("..\\credentials.txt") as f1:
 
 user = converted[0]
 password = converted[1]
-engine = create_engine(f"mssql+pyodbc://{user}:{password}@{userinfo['server']}/{userinfo['database']}?driver={userinfo['driver']}")
 
-connection = engine.connect()
-meta = MetaData()
+# engine = create_engine(f"mssql+pyodbc://{user}:{password}@{userinfo['server']}/"
+#                        f"{userinfo['database']}?driver={userinfo['driver']}")
+# connection = engine.connect()
+# meta = MetaData()
 
 
 def load_courses_table():
     list_courses = []
     for key in courses:
+        # print(key)
         temp = key[8:-15].split('_')
         course_code = temp[0] + ' ' + temp[1]
         list_courses.append(course_code)
@@ -54,19 +59,35 @@ def load_courses_table():
     df.to_sql('courses', engine, index=False, if_exists="append")
 
 
+def all_locations():
+    output = []
+    for i in s_day:
+        output.append(transformations.sparta_location(i))
+    return pd.concat(output)
+
+
 def load_student_information():
     student_id = []
     si = []
-    for i in students[1:21]:
+    location_df = all_locations()
+    for i in students:
         si.append(transformations.convert_si(extract_files.extract_json(i)))
         student_id.append(re.split("[/.]", i)[1])
+    # print(si)
+    # print(student_id)
     df = pd.concat(si).reset_index()
     df2 = pd.DataFrame(student_id, columns=["student_id"])
     output = pd.concat([df2, df], axis=1)
-    del output["index"]
-    # logging.info(df)
-    # logging.info(df2)
-    logging.info(output)
+    output.rename(columns={"result": "passed", "date": "invited_date"}, inplace=True)
+    id_name = pd.concat([output["student_id"], output["name"], output["invited_date"]], axis=1)
+    output_merged = pd.merge(output, location_df, left_on=output["name"].str.lower(),
+                             right_on=location_df["full_name"].str.lower(), how="inner")
+
+    del output_merged["index"]
+    del output_merged["key_0"]
+    del output_merged["name"]
+    del output_merged["full_name"]
+    return output_merged, id_name
 
 
 def load_behaviours():
@@ -89,13 +110,19 @@ def load_self_score():
 
 
 def load_strengths():
-    strengths = ['Charisma', 'Patient', 'Curious', 'Problem Solving', 'Courteous', 'Independent', 'Passionate',
-                 'Versatile', 'Rational', 'Collaboration', 'Ambitious', 'Reliable', 'Altruism', 'Empathy', 'Listening',
-                 'Organisation', 'Consistent', 'Efficient', 'Determined', 'Composure', 'Competitive', 'Perfectionism',
-                 'Innovative', 'Creative', 'Critical Thinking']
-    df = pd.DataFrame(strengths, columns=['name'])
-    logging.info(df)
-    df.to_sql('strength_types', engine, index=False, if_exists="append")
+    list_strengths = []
+    for student in students[1:21]:
+        # check strengths for each student in JSON file
+        for strength in extract_files.extract_json(student)["strengths"]:
+            # append strength if it's not already in the list
+            if strength not in list_strengths:
+                list_strengths.append(strength)
+            else:
+                pass
+    # convert to DataFrame to be loaded into table
+    df_strengths = pd.DataFrame(list_strengths, columns=['name'])
+    logging.info(df_strengths)
+    # df.to_sql('strength_types', engine, index=False, if_exists="append")
 
 
 def load_student_strengths():
@@ -103,13 +130,19 @@ def load_student_strengths():
 
 
 def load_weaknesses():
-    weakness_types = [
-        'Distracted', 'Impulsive', 'Introverted', 'Overbearing', 'Chatty', 'Indifferent', 'Anxious', 'Perfectionist',
-        'Sensitive', 'Controlling', 'Immature', 'Impatient', 'Conventional', 'Undisciplined', 'Passive', 'Intolerant',
-        'Chaotic', 'Selfish', 'Slow', 'Competitive', 'Critical', 'Indecisive', 'Procrastination', 'Stubborn']
-    df_weakness_types = pd.DataFrame(weakness_types, columns=['name'])
-    logging.info(df_weakness_types)
-    df_weakness_types.to_sql('weakness_types', engine, index=False, if_exists="append")
+    list_weaknesses = []
+    for student in students[1:21]:
+        # check weaknesses for each student in JSON file
+        for weakness in extract_files.extract_json(student)["weaknesses"]:
+            # append weakness if it's not already in the list
+            if weakness not in list_weaknesses:
+                list_weaknesses.append(weakness)
+            else:
+                pass
+    # convert to DataFrame to be loaded into table
+    df_weaknesses = pd.DataFrame(list_weaknesses, columns=['name'])
+    logging.info(df_weaknesses)
+    # df_weaknesses.to_sql('weakness_types', engine, index=False, if_exists="append")
 
 
 def load_student_weaknesses():
@@ -122,7 +155,7 @@ def load_scores():
 
 def load_personal_information():
     data = extract_files.extract_csv('Talent/July2019Applicants.csv')
-    transformed_data = transformations.convert_pi_contact(data)
+    transformed_data = transformations.convert_pi(data)
 
 
 def load_staff_information():
@@ -131,7 +164,6 @@ def load_staff_information():
     df["team"] = "Talent"
     logging.info(df)
     df.to_sql('staff_information', engine, index=False, if_exists="append")
-
 
 
 def main():

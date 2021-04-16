@@ -17,7 +17,7 @@ logging.basicConfig(level=logging.INFO)
 
 pd.set_option("display.max_rows", None, "display.max_columns", None)
 
-si_columns = ["name", "date", "self_development", "geo_flex", "financial_support_self", "result"]
+si_columns = ["name", "date", "self_development", "geo_flex", "financial_support_self", "result", "course_interest"]
 weeks_columns = ["student_id", "week_id", "behaviour_id", "score"]
 courses_column = "name"
 courses = []
@@ -58,7 +58,8 @@ def convert_scores(info):
     return pd.DataFrame(student_scores)
 
 
-def convert_pi_contact(info):
+
+def convert_pi(info):
     """
     :param info: this will be a dataframe
     :return: will be dataframe
@@ -145,5 +146,13 @@ def get_unique_column_info(col, csv_keys):
         data = data.dropna()
         new_column.extend(data[col].unique().tolist())
 
-
     return set(new_column)
+
+
+def sparta_location(key):
+    file_contents = extract_files.extract_txt(key)
+    names = [re.split(" - ", i)[0] for i in file_contents[3:]]
+    name_df = pd.DataFrame(names, columns=["full_name"])
+    name_df["location"] = file_contents[1]
+    return name_df
+
