@@ -112,7 +112,7 @@ def load_tech_types_table():
     # df = pd.DataFrame(techs, columns=['name'])
     # logging.info(df)
     # df.to_sql('tech_types', engine, index=False, if_exists="append")
-load_tech_types_table()
+# load_tech_types_table()
 
 
 def load_self_score():
@@ -160,7 +160,35 @@ def load_student_weaknesses():
 
 
 def load_scores():
-    pass
+    student_scores = []
+    for file in s_day[1:21]:
+        # Extract each file, including headers
+        for student in extract_files.extract_txt(file):
+            # Remove headers by checking for string not found in headers
+            if "Psychometrics" in student:
+                # Split string elements into list, must have a space either side of "-" for double-barrel name
+                name_scores = re.split(" - |,|:", student)
+                # Iterate across list elements, strip whitespace
+                for i in range(len(name_scores)):
+                    name_scores[i] = name_scores[i].strip()
+                # Remove exam titles
+                name_scores.remove("Psychometrics")
+                name_scores.remove("Presentation")
+                # Split Psych and Presentation Scores, append maximum scores for each
+                for j in [1, 2]:
+                    name_scores.append(name_scores[j].split("/")[1])
+                    name_scores[j] = name_scores[j].split("/")[0]
+                # Turn numbers into integer data types
+                for i in range(1, 5):
+                    name_scores[i] = int(name_scores[i])
+                # Swap columns round so Psych and Pres columns are together
+                name_scores[2], name_scores[3] = name_scores[3], name_scores[2]
+                student_scores.append(name_scores)
+
+    df_scores = pd.DataFrame(student_scores, columns=['full_name', 'psych_score', 'psych_max_score',
+                                                      'presentation_score', 'presentation_max_score'])
+    logging.info(df_scores)
+
 
 
 def load_personal_information():
@@ -177,7 +205,7 @@ def load_staff_information():
 
 
 def main():
-    load_staff_information()
+    load_scores()
 
 
 main()
