@@ -44,6 +44,7 @@ meta = MetaData()
 def load_courses_table():
     list_courses = []
     for key in courses:
+        # print(key)
         temp = key[8:-15].split('_')
         course_code = temp[0] + ' ' + temp[1]
         list_courses.append(course_code)
@@ -58,6 +59,8 @@ def load_student_information():
     for i in students[1:21]:
         si.append(transformations.convert_si(extract_files.extract_json(i)))
         student_id.append(re.split("[/.]", i)[1])
+    # print(si)
+    # print(student_id)
     df = pd.concat(si).reset_index()
     df2 = pd.DataFrame(student_id, columns=["student_id"])
     output = pd.concat([df2, df], axis=1)
@@ -101,13 +104,19 @@ def load_student_strengths():
 
 
 def load_weaknesses():
-    weakness_types = [
-        'Distracted', 'Impulsive', 'Introverted', 'Overbearing', 'Chatty', 'Indifferent', 'Anxious', 'Perfectionist',
-        'Sensitive', 'Controlling', 'Immature', 'Impatient', 'Conventional', 'Undisciplined', 'Passive', 'Intolerant',
-        'Chaotic', 'Selfish', 'Slow', 'Competitive', 'Critical', 'Indecisive', 'Procrastination', 'Stubborn']
-    df_weakness_types = pd.DataFrame(weakness_types, columns=['name'])
-    logging.info(df_weakness_types)
-    df_weakness_types.to_sql('weakness_types', engine, index=False, if_exists="append")
+    list_weaknesses = []
+    for student in students[1:21]:
+        # check weaknesses for each student in JSON file
+        for weakness in extract_files.extract_json(student)["weaknesses"]:
+            # append weakness if it's not already in the list
+            if weakness not in list_weaknesses:
+                list_weaknesses.append(weakness)
+            else:
+                pass
+    # convert to DataFrame to be loaded into table
+    df_weaknesses = pd.DataFrame(list_weaknesses, columns=['name'])
+    logging.info(df_weaknesses)
+    # df_weaknesses.to_sql('weakness_types', engine, index=False, if_exists="append")
 
 
 def load_student_weaknesses():
@@ -125,7 +134,8 @@ def load_personal_information():
    
 
 def main():
-    load_courses_table()
+    # load_courses_table()
+    load_weaknesses()
 
 
 main()
