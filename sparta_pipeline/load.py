@@ -18,6 +18,7 @@ bucket = s3_resource.Bucket(bucket_name)
 contents = bucket.objects.all()
 students = [i.key for i in contents if re.findall(".json$", i.key)]
 courses = [i.key for i in contents if re.findall(".csv$", i.key) and re.findall("^Academy", i.key)]
+s_day = [i.key for i in contents if re.findall(".txt$", i.key)]
 
 # Read config.ini file
 config_object = ConfigParser()
@@ -53,18 +54,33 @@ def load_courses_table():
     df.to_sql('classes', engine, index=False, if_exists="append")
 
 
+def all_locations():
+    output = []
+    for i in s_day:
+        output.append(transformations.sparta_location(i))
+    return pd.concat(output)
+
+
 def load_student_information():
     student_id = []
     si = []
-    for i in students[1:21]:
+    location_df = all_locations()
+    for i in students:
         si.append(transformations.convert_si(extract_files.extract_json(i)))
         student_id.append(re.split("[/.]", i)[1])
     df = pd.concat(si).reset_index()
     df2 = pd.DataFrame(student_id, columns=["student_id"])
     output = pd.concat([df2, df], axis=1)
-    del output["index"]
-    logging.info(output)
-    return output
+    output.rename(columns={"result": "passed", "date": "invited_date"}, inplace=True)
+    id_name = pd.concat([output["student_id"], output["name"], output["invited_date"]], axis=1)
+    output_merged = pd.merge(output, location_df, left_on=output["name"].str.lower(),
+                             right_on=location_df["full_name"].str.lower(), how="inner")
+
+    del output_merged["index"]
+    del output_merged["key_0"]
+    del output_merged["name"]
+    del output_merged["full_name"]
+    return output_merged, id_name
 
 
 def load_behaviours():
@@ -126,7 +142,9 @@ def load_personal_information():
 
 def main():
     start = time.time()
-    load_student_information()
+    # load_student_information()
+    logging.info(load_student_information()[0])
+    # logging.info(load_student_information()[1])
     end = time.time()
     print(end - start)
 
