@@ -5,6 +5,7 @@ import logging
 import pandas as pd
 import boto3
 import re
+from configparser import ConfigParser
 from pprint import pprint
 
 logging.basicConfig(level=logging.INFO)
@@ -18,22 +19,23 @@ students = [i.key for i in contents if re.findall(".json$", i.key)]
 courses = [i.key for i in contents if re.findall(".csv$", i.key) and re.findall("^Academy", i.key)]
 
 
-with open("..\\credentials.txt") as f1, open("..\\config.ini") as f2:
+# Read config.ini file
+config_object = ConfigParser()
+config_object.read("../config.ini")
 
+# Get the userinfo
+userinfo = config_object["USERINFO"]
+
+with open("..\\credentials.txt") as f1:
     line_file1 = f1.readlines()
-    line_file2 = f2.readlines()
     converted = []
     for element in line_file1:
         converted.append(element.strip())
-    for element in line_file2:
-        converted.append(element.strip())
+
 
 user = converted[0]
 password = converted[1]
-server = converted[2]
-database = converted[3]
-driver = converted[4]
-engine = create_engine(f"mssql+pyodbc://{user}:{password}@{server}/{database}?driver={driver}")
+engine = create_engine(f"mssql+pyodbc://{user}:{password}@{userinfo['server']}/{['database']}?driver={['driver']}")
 
 connection = engine.connect()
 meta = MetaData()
