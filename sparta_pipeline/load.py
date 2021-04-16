@@ -8,17 +8,21 @@ import re
 from configparser import ConfigParser
 import time
 from pprint import pprint
+import json
 
 logging.basicConfig(level=logging.INFO)
 s3 = boto3.client('s3')
 
 bucket_name = 'data20-final-project'
 s3_resource = boto3.resource('s3')
+s3_client = boto3.client('s3')
 bucket = s3_resource.Bucket(bucket_name)
 contents = bucket.objects.all()
 students = [i.key for i in contents if re.findall(".json$", i.key)]
 courses = [i.key for i in contents if re.findall(".csv$", i.key) and re.findall("^Academy", i.key)]
+applicants = [i.key for i in contents if re.findall(".csv$", i.key) and re.findall("^Talent", i.key)]
 s_day = [i.key for i in contents if re.findall(".txt$", i.key)]
+
 
 # Read config.ini file
 config_object = ConfigParser()
@@ -52,7 +56,7 @@ def load_courses_table():
         list_courses.append(course_code)
     df = pd.DataFrame(list_courses, columns=['name_number'])
     logging.info(df)
-    df.to_sql('classes', engine, index=False, if_exists="append")
+    df.to_sql('courses', engine, index=False, if_exists="append")
 
 
 def all_locations():
@@ -96,7 +100,7 @@ def load_weeks():
 
 def load_tech_types_table():
     techs = []
-    for
+    
     for tech in extract_files.extract_json(students)["tech_self_score"]:
         if tech not in techs:
             techs.append(tech)
@@ -160,19 +164,18 @@ def load_scores():
 def load_personal_information():
     data = extract_files.extract_csv('Talent/July2019Applicants.csv')
     transformed_data = transformations.convert_pi(data)
-    del transformed_data["id"]
-   
+
+
+def load_staff_information():
+    info = transformations.get_unique_column_info('invited_by', applicants)
+    df = pd.DataFrame(info, columns=['full_name'])
+    df["team"] = "Talent"
+    logging.info(df)
+    df.to_sql('staff_information', engine, index=False, if_exists="append")
+
 
 def main():
-    # load_courses_table()
-    # load_weaknesses()
-    load_strengths()
-    # start = time.time()
-    # # load_student_information()
-    # logging.info(load_student_information()[0])
-    # # logging.info(load_student_information()[1])
-    # end = time.time()
-    # print(end - start)
+    load_staff_information()
 
 
 main()
