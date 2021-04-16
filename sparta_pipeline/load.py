@@ -96,6 +96,7 @@ def load_weeks():
 
 def load_tech_types_table():
     techs = []
+    for
     for tech in extract_files.extract_json(students)["tech_self_score"]:
         if tech not in techs:
             techs.append(tech)
