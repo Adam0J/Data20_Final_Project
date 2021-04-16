@@ -18,9 +18,7 @@ students = [i.key for i in contents if re.findall(".json$", i.key)]
 Keys = [file.key for file in contents]
 
 
-
 with open("..\\credentials.txt") as f1, open("..\\config.ini") as f2:
-
     line_file1 = f1.readlines()
     line_file2 = f2.readlines()
     converted = []
@@ -34,10 +32,10 @@ password = converted[1]
 server = converted[2]
 database = converted[3]
 driver = converted[4]
-engine = create_engine(f"mssql+pyodbc://{user}:{password}@{server}/{database}?driver={driver}")
 
-connection = engine.connect()
-meta = MetaData()
+# engine = create_engine(f"mssql+pyodbc://{user}:{password}@{server}/{database}?driver={driver}")
+# connection = engine.connect()
+# meta = MetaData()
 
 
 def load_courses_table():
@@ -70,12 +68,11 @@ def load_student_information():
         si.append(transformations.convert_si(extract_files.extract_json(i)))
         student_id.append(re.split("[/.]", i)[1])
     df = pd.concat(si).reset_index()
-    df2 = pd.DataFrame(id, columns=["student_id"])
+    df2 = pd.DataFrame(student_id, columns=["student_id"])
     output = pd.concat([df2, df], axis=1)
     del output["index"]
-    # logging.info(df)
-    # logging.info(df2)
     logging.info(output)
+    return output
 
 
 def load_behaviours():
