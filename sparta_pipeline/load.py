@@ -41,22 +41,16 @@ with open("..\\credentials.txt") as f1:
 user = converted[0]
 password = converted[1]
 
-# engine = create_engine(f"mssql+pyodbc://{user}:{password}@{userinfo['server']}/"
-#                        f"{userinfo['database']}?driver={userinfo['driver']}")
-# connection = engine.connect()
-# meta = MetaData()
+engine = create_engine(f"mssql+pyodbc://{user}:{password}@{userinfo['server']}/"
+                       f"{userinfo['database']}?driver={userinfo['driver']}")
+connection = engine.connect()
+meta = MetaData()
 
 
 def load_courses_table():
-    list_courses = []
-    for key in courses:
-        # print(key)
-        temp = key[8:-15].split('_')
-        course_code = temp[0] + ' ' + temp[1]
-        list_courses.append(course_code)
-    df = pd.DataFrame(list_courses, columns=['name_number'])
-    logging.info(df)
-    df.to_sql('courses', engine, index=False, if_exists="append")
+    df = transformations.course_trainers()[0]
+    # df.to_sql('courses', engine, index=False, if_exists="append")
+    print(df)
 
 
 def all_locations():
@@ -112,7 +106,7 @@ def load_tech_types_table():
     # df = pd.DataFrame(techs, columns=['name'])
     # logging.info(df)
     # df.to_sql('tech_types', engine, index=False, if_exists="append")
-load_tech_types_table()
+
 
 
 def load_self_score():
@@ -169,15 +163,13 @@ def load_personal_information():
 
 
 def load_staff_information():
-    info = transformations.get_unique_column_info('invited_by', applicants)
-    df = pd.DataFrame(info, columns=['full_name'])
-    df["team"] = "Talent"
-    logging.info(df)
-    df.to_sql('staff_information', engine, index=False, if_exists="append")
+    final_df = transformations.convert_staff_information()
+    logging.info(final_df)
+    # final_df.to_sql('staff_information', engine, index=False, if_exists="append")
 
 
 def main():
     load_staff_information()
 
-
+    pass
 main()
