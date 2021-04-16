@@ -28,7 +28,7 @@ meta = MetaData()
 def create_staff():
     Table(
         "staff_information", meta,
-        Column("staff_id", Integer, primary_key=True),
+        Column("staff_id", Integer, primary_key=True, autoincrement=False),
         Column("full_name", String),
         Column("team", String)
     )
