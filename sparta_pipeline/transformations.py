@@ -58,6 +58,7 @@ def convert_scores(info):
     return pd.DataFrame(student_scores)
 
 
+
 def convert_pi(info):
     """
     :param info: this will be a dataframe
@@ -76,7 +77,11 @@ def convert_pi(info):
     new = pd.DataFrame({"phone_number": temp, "invited_date": temp_date})
     info.update(new)
     del info["month"]
-    return info
+    info.rename(columns={"name": "full_name"}, inplace=True)
+
+    contact_df = info[["email", "city", "address", "postcode", "phone_number"]].copy()
+    info.drop(["email", "city", "address", "postcode", "phone_number"], axis=1, inplace=True)
+    return info, contact_df
 
 
 def convert_weeks(info):
@@ -124,6 +129,24 @@ def convert_courses(info):
             else:
                 continue
     return pd.DataFrame(to_load_courses, index=[0])
+
+
+def convert_staff_info(key):
+    file_contents = extract_files.extract_csv(key)
+    # names = [re.split(" - ", i)[0] for i in file_contents[3:]]
+    # name_df = pd.DataFrame(names, columns=["full_name"])
+    # name_df["location"] = file_contents[1]
+    return file_contents
+
+
+def get_unique_column_info(col, csv_keys):
+    new_column = []
+    for key in csv_keys:
+        data = extract_files.extract_csv(key)
+        data = data.dropna()
+        new_column.extend(data[col].unique().tolist())
+
+    return set(new_column)
 
 
 def sparta_location(key):
