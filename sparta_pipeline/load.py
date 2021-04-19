@@ -1,11 +1,11 @@
 from sparta_pipeline import extract_files
 from sparta_pipeline import transformations
+from sparta_pipeline.config_manager import *
 from sqlalchemy import *
 import logging
 import pandas as pd
 import boto3
 import re
-from configparser import ConfigParser
 import time
 from pprint import pprint
 import json
@@ -24,13 +24,6 @@ applicants = [i.key for i in contents if re.findall(".csv$", i.key) and re.finda
 s_day = [i.key for i in contents if re.findall(".txt$", i.key)]
 
 
-# Read config.ini file
-config_object = ConfigParser()
-config_object.read("../config.ini")
-
-# Get the userinfo
-userinfo = config_object["USERINFO"]
-
 with open("..\\credentials.txt") as f1:
     line_file1 = f1.readlines()
     converted = []
@@ -41,8 +34,7 @@ with open("..\\credentials.txt") as f1:
 user = converted[0]
 password = converted[1]
 
-engine = create_engine(f"mssql+pyodbc://{user}:{password}@{userinfo['server']}/"
-                       f"{userinfo['database']}?driver={userinfo['driver']}")
+engine = create_engine(f"mssql+pyodbc://{user}:{password}@{server()}/{database()}?driver={driver()}")
 connection = engine.connect()
 meta = MetaData()
 
