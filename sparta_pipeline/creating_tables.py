@@ -1,13 +1,6 @@
 import pandas as pd
 from sqlalchemy import *
-from configparser import ConfigParser
-
-# Read config.ini file
-config_object = ConfigParser()
-config_object.read("../config.ini")
-
-# Get the userinfo
-userinfo = config_object["USERINFO"]
+from sparta_pipeline.config_manager import *
 
 with open("../credentials.txt") as f1:
     line_file1 = f1.readlines()
@@ -18,8 +11,7 @@ with open("../credentials.txt") as f1:
 user = converted[0]
 password = converted[1]
 
-engine = create_engine(f"mssql+pyodbc://{user}:{password}@{userinfo['server']}/"
-                       f"{userinfo['database']}?driver={userinfo['driver']}")
+engine = create_engine(f"mssql+pyodbc://{user}:{password}@{server()}/{database()}?driver={driver()}")
 
 connection = engine.connect()
 meta = MetaData()
