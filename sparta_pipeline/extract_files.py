@@ -9,6 +9,10 @@ logging.basicConfig(level=logging.INFO)
 s3 = boto3.client('s3')
 bucket_name = 'data20-final-project'
 
+s3_resource = boto3.resource('s3')
+bucket = s3_resource.Bucket(bucket_name)
+contents = bucket.objects.all()
+
 
 def extract_csv(key):
     if re.findall(".csv$", key):

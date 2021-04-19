@@ -1,6 +1,6 @@
 from sqlalchemy import *
 import pandas as pd
-from sparta_pipeline import extract_files
+from sparta_pipeline.extract_files import *
 import boto3
 from pprint import pprint
 import re
@@ -10,29 +10,35 @@ import itertools
 import re
 from datetime import datetime
 
-data = extract_files.extract_json("Talent/10384.json")
-dataCsv = extract_files.extract_csv("Academy/Data_28_2019-02-18.csv")
-data_app = 'Talent/Feb2019Applicants.csv'
+# data = extract_files.extract_json("Talent/10384.json")
+# dataCsv = extract_files.extract_csv("Academy/Data_28_2019-02-18.csv")
+# data_app = 'Talent/Feb2019Applicants.csv'
 logging.basicConfig(level=logging.INFO)
 
 pd.set_option("display.max_rows", None, "display.max_columns", None)
 
-s3 = boto3.client('s3')
-
-bucket_name = 'data20-final-project'
-s3_resource = boto3.resource('s3')
-s3_client = boto3.client('s3')
-bucket = s3_resource.Bucket(bucket_name)
-contents = bucket.objects.all()
-students = [i.key for i in contents if re.findall(".json$", i.key)]
-courses = [i.key for i in contents if re.findall(".csv$", i.key) and re.findall("^Academy", i.key)]
-applicants = [i.key for i in contents if re.findall(".csv$", i.key) and re.findall("^Talent", i.key)]
-s_day = [i.key for i in contents if re.findall(".txt$", i.key)]
 
 si_columns = ["name", "date", "self_development", "geo_flex", "financial_support_self", "result", "course_interest"]
 weeks_columns = ["student_id", "week_id", "behaviour_id", "score"]
 courses_column = "name"
 
+
+students = []
+courses = []
+applicants = []
+s_day = []
+
+
+def sort_keys():
+    for i in contents:
+        if re.findall(".json$", i.key):
+            students.append(i.key)
+        elif re.findall("^Academy", i.key):
+            courses.append(i.key)
+        elif re.findall(".csv$", i.key):
+            applicants.append(i.key)
+        elif re.findall(".txt$", i.key):
+            s_day.append(i.key)
 
 
 def convert_si(info):
@@ -42,15 +48,14 @@ def convert_si(info):
     """
     to_load = {}
     for i in si_columns:
-        if i in info:
-            # logging.info(i)
-            # logging.info(info.get(i))
-            if info.get(i) in ["Yes", "Pass"]:
-                to_load.update({i: 1})
-            elif info.get(i) in ["No", "Fail"]:
-                to_load.update({i: 0})
-            else:
-                to_load.update({i: info[i]})
+        # logging.info(i)
+        # logging.info(info.get(i))
+        if info.get(i) in ["Yes", "Pass"]:
+            to_load.update({i: 1})
+        elif info.get(i) in ["No", "Fail"]:
+            to_load.update({i: 0})
+        else:
+            to_load.update({i: info[i]})
     return pd.DataFrame(to_load, index=[0])
 
 
@@ -145,7 +150,7 @@ def convert_courses(info):
 
 def convert_tech_types():
     to_load_tech_types = []
-    data = extract_files.extract_json('Talent/10385.json')
+    data = extract_json('Talent/10385.json')
     for entry in data:
         if entry == 'tech_self_score':
             if data[entry] not in to_load_tech_types:
@@ -156,7 +161,7 @@ def convert_tech_types():
 def get_unique_column_csv(col, csv_keys):
     new_column = []
     for key in csv_keys:
-        file = extract_files.extract_csv(key)
+        file = extract_csv(key)
         value = file.dropna()
         new_column.extend(value[col].unique().tolist())
 
@@ -166,7 +171,7 @@ def get_unique_column_csv(col, csv_keys):
 def get_unique_column_json(col, json_keys):
     new_column = []
     for key in json_keys:
-        file = extract_files.extract_json(key)
+        file = extract_json(key)
         value = file.get(col)
         if value:
             new_column.extend(value)
@@ -175,7 +180,7 @@ def get_unique_column_json(col, json_keys):
 
 
 def sparta_location(key):
-    file_contents = extract_files.extract_txt(key)
+    file_contents = extract_txt(key)
     names = [re.split(" - ", i)[0] for i in file_contents[3:]]
     name_df = pd.DataFrame(names, columns=["full_name"])
     name_df["location"] = file_contents[1]
@@ -186,7 +191,7 @@ def course_trainers():
     list_courses = []
     trainers = []
     for key in courses:
-        trainer = extract_files.extract_csv(key)["trainer"].unique().tolist()[0]
+        trainer = extract_csv(key)["trainer"].unique().tolist()[0]
         temp = key[8:-15].split('_')
         course_code = temp[0] + ' ' + temp[1]
 
