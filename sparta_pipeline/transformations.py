@@ -48,14 +48,15 @@ def convert_si(info):
     """
     to_load = {}
     for i in si_columns:
-        # logging.info(i)
-        # logging.info(info.get(i))
-        if info.get(i) in ["Yes", "Pass"]:
-            to_load.update({i: 1})
-        elif info.get(i) in ["No", "Fail"]:
-            to_load.update({i: 0})
-        else:
-            to_load.update({i: info[i]})
+        if i in info:
+            # logging.info(i)
+            # logging.info(info.get(i))
+            if info.get(i) in ["Yes", "Pass"]:
+                to_load.update({i: 1})
+            elif info.get(i) in ["No", "Fail"]:
+                to_load.update({i: 0})
+            else:
+                to_load.update({i: info[i]})
     return pd.DataFrame(to_load, index=[0])
 
 
@@ -231,4 +232,66 @@ def staff_to_ids():
 
     logging.info(staff_course)
 
-staff_to_ids()
+
+def get_list_types(sid, input_list, output, join_table):
+    for i in input_list:
+        if i not in output:
+            output.append(i)
+            join_table.append([sid, output.index(i) + 1])
+        else:
+            join_table.append([sid, output.index(i) + 1])
+
+
+def get_dict_types(sid, input_dict, output, join_table):
+    for i in list(input_dict.keys()):
+        if i not in output:
+            output.append(i)
+            join_table.append([sid, output.index(i) + 1, input_dict[i]])
+
+        else:
+            join_table.append([sid, output.index(i) + 1, input_dict[i]])
+
+
+def read_si():
+    student_id = []
+    si = []
+    tech_types = []
+    join_tech = []
+    strength_types = []
+    join_strengths = []
+    weakness_types = []
+    join_weaknesses = []
+
+    for key in students[1:20]:
+        file = extract_json(key)
+        si.append(convert_si(file))
+        s_id = re.split("[/.]", key)[1]
+        student_id.append(s_id)
+
+        tech = file.get("tech_self_score")
+        if tech:
+            get_dict_types(s_id, tech, tech_types, join_tech)
+
+        strengths = file.get("strengths")
+        if strengths:
+            get_list_types(s_id, strengths, strength_types, join_strengths)
+
+        weaknesses = file.get("weaknesses")
+        if weaknesses:
+            get_list_types(s_id, weaknesses, weakness_types, join_weaknesses)
+
+    df = pd.concat(si).reset_index()
+    df2 = pd.DataFrame(student_id, columns=["student_id"])
+    output = pd.concat([df2, df], axis=1)
+    del output["index"]
+
+    tt_df = pd.DataFrame(tech_types, columns=["tech_name"])
+    jt_df = pd.DataFrame(join_tech, columns=["student_id", "tech_id", "tech_self_score"])
+
+    st_df = pd.DataFrame(strength_types, columns=["strength_name"])
+    js_df = pd.DataFrame(join_strengths, columns=["student_id", "strength_id"])
+
+    wt_df = pd.DataFrame(weakness_types, columns=["weakness_name"])
+    jw_df = pd.DataFrame(join_weaknesses, columns=["student_id", "weakness_id"])
+
+    return output, tt_df, jt_df, st_df, js_df, wt_df, jw_df
