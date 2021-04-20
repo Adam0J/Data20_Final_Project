@@ -188,8 +188,7 @@ def load_staff_information():
     # final_df.to_sql('staff_information', engine, index=False, if_exists="append")
 
 
-def main():
-    pass
+def load(df, input_table, index_value):
+    df.to_sql(input_table, engine, index=index_value, if_exists="append")
 
 
-main()

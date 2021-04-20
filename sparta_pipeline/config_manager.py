@@ -1,7 +1,7 @@
 import configparser
 
 _config = configparser.ConfigParser()
-_config.read('Data20_Final_Project/config.ini')
+_config.read('../config.ini')
 
 
 def server():

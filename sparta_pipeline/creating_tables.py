@@ -64,7 +64,7 @@ def create_sparta():
 def create_behaviours():
     Table(
         'behaviour_types', meta,
-        Column('behaviour_id', Integer, primary_key=True),
+        Column('behaviour_id', Integer, primary_key=True, autoincrement=False),
         Column('behaviour', String)
     )
 

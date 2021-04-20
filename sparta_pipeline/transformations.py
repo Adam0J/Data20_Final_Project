@@ -270,7 +270,7 @@ def read_si():
     weakness_types = []
     join_weaknesses = []
 
-    for key in students[:501]:
+    for key in students[1:100]:
         file = extract_json(key)
         si.append(convert_si(file))
         s_id = re.split("[/.]", key)[1]
@@ -340,8 +340,9 @@ def behaviour_tables():
     bs_df = pd.merge(bs_df, bt_df, left_on="behaviours", right_on="behaviour", how="left")
     bs_df = bs_df.drop(["behaviours", "behaviour"], axis=1)
     bs_df = bs_df[["name", "week_id", "behaviour_id", "score"]]
+    bs_df.rename(columns={"score": "behaviour_score"}, inplace=True)
     bs_df = bs_df.dropna()
-    bs_df = bs_df.astype({"score": int, "week_id": int, "behaviour_id": int})
+    bs_df = bs_df.astype({"behaviour_score": int, "week_id": int, "behaviour_id": int})
     bs_df = bs_df.sort_values(by=["name", "week_id"])
 
     course_df = pd.DataFrame(course_names, columns=["course_name", "staff_name"])
@@ -377,6 +378,9 @@ def gen_sparta(input_df, loc_info):
     del final_sparta["name"]
     del final_sparta["key_0"]
     del final_sparta["full_name"]
+
+    final_sparta.rename(columns={"date": "invited_date", "result": "passed"}, inplace=True)
+ 
     return final_sparta
 
 
@@ -404,6 +408,15 @@ def gen_pi():
     return pi, contacts
 
 
+def behaviour_scores(input_df, id_df):
+    behaviour_scores_df = pd.merge(id_df, input_df, left_on=id_df["name"].str.lower(),
+                           right_on=input_df["name"].str.lower(), how="inner")
+
+    behaviour_scores_df = behaviour_scores_df.drop(["key_0", "name_x", "date", "name_y"], axis=1)
+
+    return behaviour_scores_df
+
+
 def final_pi(input_df, course_id_df, student_id_df):
     final = pd.merge(student_id_df, input_df, left_on=[student_id_df["name"].str.lower(),
                                                        student_id_df["date"]],
@@ -417,3 +430,4 @@ def final_pi(input_df, course_id_df, student_id_df):
     # trainers_df = trainers_df.astype({"staff_id": int})
 
     return final
+
