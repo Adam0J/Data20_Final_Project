@@ -28,7 +28,25 @@ transformations.sparta_scores(sparta_scores[1], talent_data[7])
 behaviour_data = transformations.behaviour_tables()
 
 # Creating the contacts and personal info Dataframes
-pi = transformations.gen_pi()
+temp_pi = transformations.gen_pi()
+
 
 # Creating the final personal info Dataframe
-pprint(transformations.final_pi(pi[0], behaviour_data[3], talent_data[7]))
+final_pi = transformations.final_pi(temp_pi[0], behaviour_data[1], behaviour_data[4], talent_data[7])
+
+# list all of the dataframes to be loaded
+
+tech_types =
+strength_types =
+weakness_types =
+behaviour_types =
+sparta_day_information =
+staff_information =
+personal_information =
+contact_details =
+courses =
+behaviour_scores =
+sparta_scores =
+self_score =
+student_strengths =
+student_weaknesses =

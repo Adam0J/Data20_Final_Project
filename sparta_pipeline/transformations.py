@@ -52,7 +52,7 @@ def convert_si(info):
                 to_load.update({i: 1})
             elif info.get(i) in ["No", "Fail"]:
                 to_load.update({i: 0})
-            if "//" in info.get(i):
+            elif "//" in info.get(i):
                 temp = info.get(i).replace("//", "/")
                 temp = datetime.strptime(temp, "%d/%m/%Y").date()
                 to_load.update({i: temp})
@@ -309,6 +309,7 @@ def read_si():
 def behaviour_tables():
     behaviour_scores = []
     course_names = []
+    all_students = []
     for key in courses:
         info = extract_csv(key)
         current_df = info.melt(id_vars=["name", "trainer"], var_name="behaviours", value_name="score")
@@ -319,7 +320,12 @@ def behaviour_tables():
         file_name_split = re.split("[/._]", key)[1:3]
 
         trainer = current_df["trainer"].iloc[0]  # Might be able to remove this as we already have a trainer df.
-        course_names.append([file_name_split[0]+' '+file_name_split[1], trainer])
+        course = file_name_split[0] + ' ' + file_name_split[1]
+        course_students = info["name"]
+        course_students = course_students.to_frame()
+        course_students["c"] = course
+        all_students.append(course_students)
+        course_names.append([course, trainer])
 
     bs_df = pd.concat(behaviour_scores)
 
@@ -350,7 +356,12 @@ def behaviour_tables():
     course_df["course_id"] = course_df.index + 1
     course_df = course_df[["course_id", "course_name", "staff_id"]]
 
-    return bs_df, trainers_df, bt_df, course_df
+    student_course_mid = pd.concat(all_students)
+    student_course = pd.merge(student_course_mid, course_df, left_on=student_course_mid["c"],
+                              right_on=course_df["course_name"], how="inner")
+    student_course = student_course.drop(["key_0", "c", "course_name", "staff_id"], axis=1)
+
+    return bs_df, trainers_df, bt_df, course_df, student_course
 
 
 def read_sparta_day(key):
@@ -374,19 +385,16 @@ def sparta_score_info():
 def gen_sparta(input_df, loc_info):
     final_sparta = pd.merge(input_df, loc_info, left_on=input_df["name"].str.lower(),
                             right_on=loc_info["full_name"].str.lower(), how="inner")
-    del final_sparta["name"]
-    del final_sparta["key_0"]
-    del final_sparta["full_name"]
+    final_sparta = final_sparta.drop(["name", "key_0", "full_name"], axis=1)
+
     return final_sparta
 
 
 def sparta_scores(input_df, id_df):
     final_score = pd.merge(id_df, input_df, left_on=id_df["name"].str.lower(),
                            right_on=input_df["full_name"].str.lower(), how="inner")
-    del final_score["key_0"]
-    del final_score["name"]
-    del final_score["date"]
-    del final_score["full_name"]
+    final_score = final_score.drop(["key_0", "name", "date", "full_name"], axis=1)
+
     return final_score
 
 
@@ -404,16 +412,26 @@ def gen_pi():
     return pi, contacts
 
 
-def final_pi(input_df, course_id_df, student_id_df):
-    final = pd.merge(student_id_df, input_df, left_on=[student_id_df["name"].str.lower(),
-                                                       student_id_df["date"]],
-                     right_on=[input_df["full_name"].str.lower(), input_df["invited_date"]])
-    # trainers = bs_df["trainer"].unique().tolist()
-    # del bs_df["trainer"]
-    # trainers_df = pd.DataFrame(trainers, columns=["full_name"])
-    # trainers_df["team"] = "trainer"
-    # trainers_df["staff_id"] = trainers_df.index + 1
-    # trainers_df = trainers_df[["staff_id", "full_name", "team"]]
-    # trainers_df = trainers_df.astype({"staff_id": int})
+def final_pi(input_df, staff_id_df, course_id_df, student_id_df):
+    with_sid = pd.merge(student_id_df, input_df, left_on=[student_id_df["name"].str.lower(),
+                                                          student_id_df["date"]],
+                        right_on=[input_df["full_name"].str.lower(), input_df["invited_date"]])
+    with_sid = with_sid.drop(["key_0", "key_1", "date", "id", "name"], axis=1)
 
-    return final
+    trainers = with_sid["invited_by"].unique().tolist()
+    trainers_df = pd.DataFrame(trainers, columns=["full_name"])
+    trainers_df["team"] = "talent"
+    staff = pd.concat([staff_id_df, trainers_df]).reset_index()
+    staff["staff_id"] = staff.index + 1
+    del staff["index"]
+
+    with_tid = pd.merge(with_sid, staff, left_on=with_sid["invited_by"],
+                        right_on=staff["full_name"], how="inner")
+    with_tid = with_tid.drop(["key_0", "invited_by", "full_name_y", "team"], axis=1)
+
+    final = pd.merge(with_tid, course_id_df, left_on=with_tid["full_name_x"].str.lower(),
+                     right_on=course_id_df["name"].str.lower(), how="inner")
+    final.drop(["key_0", "invited_date", "name"], axis=1, inplace=True)
+    final.rename(columns={"full_name_x": "full_name"}, inplace=True)
+
+    return final, staff
