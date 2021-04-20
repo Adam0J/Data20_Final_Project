@@ -294,4 +294,27 @@ def read_si():
     wt_df = pd.DataFrame(weakness_types, columns=["weakness_name"])
     jw_df = pd.DataFrame(join_weaknesses, columns=["student_id", "weakness_id"])
 
-    return output, tt_df, jt_df, st_df, js_df, wt_df, jw_df
+    id_name = pd.concat([output["student_id"], output["name"], output["date"]], axis=1)
+    return output, tt_df, jt_df, st_df, js_df, wt_df, jw_df, id_name
+
+
+def read_courses():
+    behaviour_scores = []
+    for key in courses[1:10]:
+        info = extract_csv(key)
+        current_df = info.melt(id_vars=["name", "trainer"], var_name="behaviours", value_name="score")
+        df2 = pd.DataFrame(current_df["behaviours"].str.split("_W").tolist(), columns=["behaviours", "week_id"])
+        current_df["behaviours"] = df2["behaviours"]
+        current_df["week_id"] = df2["week_id"]
+        behaviour_scores.append(current_df)
+
+    df = pd.concat(behaviour_scores)
+    trainers = df["trainer"].unique().tolist()
+    del df["trainer"]
+
+    trainers = pd.DataFrame(trainers, columns=["full_name"])
+    trainers["team"] = "trainer"
+
+    return df, trainers
+
+
