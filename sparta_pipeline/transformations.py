@@ -3,7 +3,6 @@ import pandas as pd
 from sparta_pipeline.extract_files import *
 import boto3
 from pprint import pprint
-import re
 import logging
 import time
 import itertools
@@ -17,11 +16,9 @@ logging.basicConfig(level=logging.INFO)
 
 pd.set_option("display.max_rows", None, "display.max_columns", None)
 
-
 si_columns = ["name", "date", "self_development", "geo_flex", "financial_support_self", "result", "course_interest"]
 weeks_columns = ["student_id", "week_id", "behaviour_id", "score"]
 courses_column = "name"
-
 
 students = []
 courses = []
@@ -62,18 +59,29 @@ def convert_si(info):
 
 def convert_scores(info):
     """
-    :param info: this will be a s3 key
+    :param info: this will be a list
     :return: will be dataframe
     """
     new_list = [re.split(', | -  |: |/', i) for i in info]
     student_scores = []
     for student in new_list[3:]:
+        full_name = student[0]
         psyc_score = int(student[2])
         psyc_max = int(student[3])
         pres_score = int(student[5])
         pres_max = int(student[6])
-        student_scores.append([psyc_score, psyc_max, pres_score, pres_max])
-    return pd.DataFrame(student_scores)
+        student_scores.append([full_name, psyc_score, psyc_max, pres_score, pres_max])
+    return pd.DataFrame(student_scores, columns=["full_name", "psychometrics_score", "psychometrics_max",
+                                                 "presentations_score", "presentations_max"])
+
+
+def date_fix(date_string):
+    m = re.split(" ", date_string)
+    if m[0] == "SEPT":
+        return "SEPTEMBER" + " " + m[1]
+    else:
+        return date_string
+
 
 
 def convert_pi(info):
@@ -88,7 +96,9 @@ def convert_pi(info):
     temp = [re.sub('[^+0-9]', '', i) for i in info.get("phone_number").values.tolist() if i is not None]
     temp_day = [str(int(i)) if isinstance(i, float) else i for i in info.get("invited_date").values.tolist()]
     temp_month = [i for i in info.get("month").values.tolist()]
-    temp_date = [datetime.strptime(x+" "+y, "%d %B %Y").date() if x+y != "NotInvited" else x+" "+y
+    for i in range(len(temp_month)):
+        temp_month[i] = date_fix(temp_month[i])
+    temp_date = [datetime.strptime(x + " " + y, "%d %B %Y").date() if x + y != "NotInvited" else x + " " + y
                  for x, y in zip(temp_day, temp_month)]
 
     new = pd.DataFrame({"phone_number": temp, "invited_date": temp_date})
@@ -99,7 +109,6 @@ def convert_pi(info):
     contact_df = info[["email", "city", "address", "postcode", "phone_number"]].copy()
     info.drop(["email", "city", "address", "postcode", "phone_number"], axis=1, inplace=True)
     return info, contact_df
-
 
 def convert_weeks(info):
     """
@@ -115,7 +124,8 @@ def convert_weeks(info):
 
     # iterating week_id across all students
     lst = range(1, number_of_weeks + 1)
-    wks_col = list(itertools.chain.from_iterable(itertools.repeat(x, int((len(new_df))/number_of_weeks)) for x in lst))
+    wks_col = list(
+        itertools.chain.from_iterable(itertools.repeat(x, int((len(new_df)) / number_of_weeks)) for x in lst))
 
     # adding week_id column
     new_df["week_id"] = wks_col
@@ -178,14 +188,6 @@ def get_unique_column_json(col, json_keys):
             new_column.extend(value)
     df = pd.DataFrame(set(new_column), columns=[col])
     return df
-
-
-def sparta_location(key):
-    file_contents = extract_txt(key)
-    names = [re.split(" - ", i)[0] for i in file_contents[3:]]
-    name_df = pd.DataFrame(names, columns=["full_name"])
-    name_df["location"] = file_contents[1]
-    return name_df
 
 
 def course_trainers():
@@ -345,3 +347,56 @@ def behaviour_tables():
     return bs_df, trainers_df, bt_df, course_df
 
 
+def read_sparta_day(key):
+    file_contents = extract_txt(key)
+    names = [re.split(" - ", i)[0] for i in file_contents[3:]]
+    name_df = pd.DataFrame(names, columns=["full_name"])
+    name_df["location"] = file_contents[1]
+    return name_df, convert_scores(file_contents)
+
+
+def sparta_score_info():
+    locations = []
+    scores = []
+    for i in s_day:
+        current = read_sparta_day(i)
+        locations.append(current[0])
+        scores.append(current[1])
+    return pd.concat(locations), pd.concat(scores)
+
+
+def gen_sparta(input_df, loc_info):
+    final_sparta = pd.merge(input_df, loc_info, left_on=input_df["name"].str.lower(),
+                            right_on=loc_info["full_name"].str.lower(), how="inner")
+    del final_sparta["name"]
+    del final_sparta["key_0"]
+    del final_sparta["full_name"]
+    return final_sparta
+
+
+def sparta_scores(input_df, id_df):
+    final_score = pd.merge(id_df, input_df, left_on=id_df["name"].str.lower(),
+                           right_on=input_df["full_name"].str.lower(), how="inner")
+    del final_score["key_0"]
+    del final_score["name"]
+    del final_score["date"]
+    del final_score["full_name"]
+    return final_score
+
+
+def gen_pi():
+    pi_list = []
+    contacts_list = []
+    for i in applicants:
+        d = extract_csv(i)
+        total = convert_pi(d)
+        pi_list.append(total[0])
+        contacts_list.append(total[1])
+    pi = pd.concat(pi_list)
+    contacts = pd.concat(contacts_list)
+
+    return pi, contacts
+
+
+def final_pi(input_df, staff_id_df, course_id_df, student_id_df):
+    pass
