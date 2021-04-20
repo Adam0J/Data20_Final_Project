@@ -298,23 +298,50 @@ def read_si():
     return output, tt_df, jt_df, st_df, js_df, wt_df, jw_df, id_name
 
 
-def read_courses():
+def behaviour_tables():
     behaviour_scores = []
-    for key in courses[1:10]:
+    course_names = []
+    for key in courses:
         info = extract_csv(key)
         current_df = info.melt(id_vars=["name", "trainer"], var_name="behaviours", value_name="score")
         df2 = pd.DataFrame(current_df["behaviours"].str.split("_W").tolist(), columns=["behaviours", "week_id"])
         current_df["behaviours"] = df2["behaviours"]
         current_df["week_id"] = df2["week_id"]
         behaviour_scores.append(current_df)
+        file_name_split = re.split("[/._]", key)[1:3]
 
-    df = pd.concat(behaviour_scores)
-    trainers = df["trainer"].unique().tolist()
-    del df["trainer"]
+        trainer = current_df["trainer"].iloc[0]  # Might be able to remove this as we already have a trainer df.
+        course_names.append([file_name_split[0]+' '+file_name_split[1], trainer])
 
-    trainers = pd.DataFrame(trainers, columns=["full_name"])
-    trainers["team"] = "trainer"
+    bs_df = pd.concat(behaviour_scores)
 
-    return df, trainers
+    behaviour_types = bs_df["behaviours"].unique().tolist()
+    bt_df = pd.DataFrame(behaviour_types, columns=["behaviour"])
+    bt_df["behaviour_id"] = bt_df.index + 1
+    bt_df = bt_df[["behaviour_id", "behaviour"]]
+    bt_df = bt_df.astype({"behaviour_id": int})
+
+    trainers = bs_df["trainer"].unique().tolist()
+    del bs_df["trainer"]
+    trainers_df = pd.DataFrame(trainers, columns=["full_name"])
+    trainers_df["team"] = "trainer"
+    trainers_df["staff_id"] = trainers_df.index + 1
+    trainers_df = trainers_df[["staff_id", "full_name", "team"]]
+    trainers_df = trainers_df.astype({"staff_id": int})
+
+    bs_df = pd.merge(bs_df, bt_df, left_on="behaviours", right_on="behaviour", how="left")
+    bs_df = bs_df.drop(["behaviours", "behaviour"], axis=1)
+    bs_df = bs_df[["name", "week_id", "behaviour_id", "score"]]
+    bs_df = bs_df.dropna()
+    bs_df = bs_df.astype({"score": int, "week_id": int, "behaviour_id": int})
+    bs_df = bs_df.sort_values(by=["name", "week_id"])
+
+    course_df = pd.DataFrame(course_names, columns=["course_name", "staff_name"])
+    course_df = pd.merge(course_df, trainers_df, left_on="staff_name", right_on="full_name", how="left")
+    course_df = course_df.drop(["staff_name", "full_name", "team"], axis=1)
+    course_df["course_id"] = course_df.index + 1
+    course_df = course_df[["course_id", "course_name", "staff_id"]]
+
+    return bs_df, trainers_df, bt_df, course_df
 
 
