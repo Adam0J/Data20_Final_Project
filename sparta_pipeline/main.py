@@ -1,4 +1,5 @@
 from sparta_pipeline import creating_tables, transformations, load
+import time
 
 # Creates all the required tables in a SQL Server database.
 creating_tables.main()
@@ -10,32 +11,44 @@ transformations.sort_keys()
 talent_data = transformations.read_si()
 
 # All data from txt files made into 2 separate dataframes
-sparta_scores = transformations.sparta_score_info()
+s_scores = transformations.sparta_score_info()
 
 # Output the Dataframe to load into sparta_day_information
-sdi_df = transformations.gen_sparta(talent_data[0], sparta_scores[0])
+sdi_df = transformations.gen_sparta(talent_data[0], s_scores[0])
 
 # Output the Dataframe to load into the sparta_day_scores table
-transformations.sparta_scores(sparta_scores[1], talent_data[7])
+sds_df = transformations.sparta_scores(s_scores[1], talent_data[7])
 
 # Creating 'Behaviour Scores' df, Half of 'Staff information' df, 'Behaviour Types' df, Courses df
 behaviour_data = transformations.behaviour_tables()
-bs_df = behaviour_data[0]
-bs_df = transformations.behaviour_scores(bs_df, talent_data[7])
+bs_df = transformations.behaviour_scores(behaviour_data[0], talent_data[7])
 
 bt_df = behaviour_data[2]
 
 # Creating the contacts and personal info Dataframes
-pi = transformations.gen_pi()
+temp_pi = transformations.gen_pi()
 
+# Creating the final personal info Dataframe
+final_personal_info = transformations.final_pi(temp_pi[0], behaviour_data[1], behaviour_data[4], talent_data[7])
+
+# list all of the dataframes to be loaded
+
+tech_types = talent_data[1]
+strength_types = talent_data[3]
+weakness_types = talent_data[5]
+behaviour_types = behaviour_data[2]
+sparta_day_information = sdi_df
+staff_information = final_personal_info[1]
+personal_information = final_personal_info[0]
+contact_details = temp_pi[1]
+courses = behaviour_data[3]
+behaviour_scores = bs_df
+sparta_day_scores = sds_df
+self_score = talent_data[2]
+student_strengths = talent_data[4]
+student_weaknesses = talent_data[6]
 
 # Examples of loading some tables.
-load.load(bt_df, 'behaviour_types', False)
-load.load(sdi_df, 'sparta_day_information', False)
-load.load(bs_df, 'behaviour_scores', False)
-
-
-
-
-
-
+load.load(behaviour_types, 'behaviour_types', False)
+load.load(sparta_day_information, 'sparta_day_information', False)
+load.load(behaviour_scores, 'behaviour_scores', False)
