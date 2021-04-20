@@ -1,6 +1,6 @@
 from sqlalchemy import *
 import pandas as pd
-from sparta_pipeline import extract_files
+from sparta_pipeline.extract_files import *
 import boto3
 from pprint import pprint
 import re
@@ -10,29 +10,35 @@ import itertools
 import re
 from datetime import datetime
 
-data = extract_files.extract_json("Talent/10384.json")
-dataCsv = extract_files.extract_csv("Academy/Data_28_2019-02-18.csv")
-data_app = 'Talent/Feb2019Applicants.csv'
+# data = extract_files.extract_json("Talent/10384.json")
+# dataCsv = extract_files.extract_csv("Academy/Data_28_2019-02-18.csv")
+# data_app = 'Talent/Feb2019Applicants.csv'
 logging.basicConfig(level=logging.INFO)
 
 pd.set_option("display.max_rows", None, "display.max_columns", None)
 
-s3 = boto3.client('s3')
-
-bucket_name = 'data20-final-project'
-s3_resource = boto3.resource('s3')
-s3_client = boto3.client('s3')
-bucket = s3_resource.Bucket(bucket_name)
-contents = bucket.objects.all()
-students = [i.key for i in contents if re.findall(".json$", i.key)]
-courses = [i.key for i in contents if re.findall(".csv$", i.key) and re.findall("^Academy", i.key)]
-applicants = [i.key for i in contents if re.findall(".csv$", i.key) and re.findall("^Talent", i.key)]
-s_day = [i.key for i in contents if re.findall(".txt$", i.key)]
 
 si_columns = ["name", "date", "self_development", "geo_flex", "financial_support_self", "result", "course_interest"]
 weeks_columns = ["student_id", "week_id", "behaviour_id", "score"]
 courses_column = "name"
 
+
+students = []
+courses = []
+applicants = []
+s_day = []
+
+
+def sort_keys():
+    for i in contents:
+        if re.findall(".json$", i.key):
+            students.append(i.key)
+        elif re.findall("^Academy", i.key):
+            courses.append(i.key)
+        elif re.findall(".csv$", i.key):
+            applicants.append(i.key)
+        elif re.findall(".txt$", i.key):
+            s_day.append(i.key)
 
 
 def convert_si(info):
@@ -145,7 +151,7 @@ def convert_courses(info):
 
 def convert_tech_types():
     to_load_tech_types = []
-    data = extract_files.extract_json('Talent/10385.json')
+    data = extract_json('Talent/10385.json')
     for entry in data:
         if entry == 'tech_self_score':
             if data[entry] not in to_load_tech_types:
@@ -156,7 +162,7 @@ def convert_tech_types():
 def get_unique_column_csv(col, csv_keys):
     new_column = []
     for key in csv_keys:
-        file = extract_files.extract_csv(key)
+        file = extract_csv(key)
         value = file.dropna()
         new_column.extend(value[col].unique().tolist())
 
@@ -166,7 +172,7 @@ def get_unique_column_csv(col, csv_keys):
 def get_unique_column_json(col, json_keys):
     new_column = []
     for key in json_keys:
-        file = extract_files.extract_json(key)
+        file = extract_json(key)
         value = file.get(col)
         if value:
             new_column.extend(value)
@@ -175,7 +181,7 @@ def get_unique_column_json(col, json_keys):
 
 
 def sparta_location(key):
-    file_contents = extract_files.extract_txt(key)
+    file_contents = extract_txt(key)
     names = [re.split(" - ", i)[0] for i in file_contents[3:]]
     name_df = pd.DataFrame(names, columns=["full_name"])
     name_df["location"] = file_contents[1]
@@ -186,7 +192,7 @@ def course_trainers():
     list_courses = []
     trainers = []
     for key in courses:
-        trainer = extract_files.extract_csv(key)["trainer"].unique().tolist()[0]
+        trainer = extract_csv(key)["trainer"].unique().tolist()[0]
         temp = key[8:-15].split('_')
         course_code = temp[0] + ' ' + temp[1]
 
@@ -226,4 +232,89 @@ def staff_to_ids():
 
     logging.info(staff_course)
 
-staff_to_ids()
+
+def get_list_types(sid, input_list, output, join_table):
+    for i in input_list:
+        if i not in output:
+            output.append(i)
+            join_table.append([sid, output.index(i) + 1])
+        else:
+            join_table.append([sid, output.index(i) + 1])
+
+
+def get_dict_types(sid, input_dict, output, join_table):
+    for i in list(input_dict.keys()):
+        if i not in output:
+            output.append(i)
+            join_table.append([sid, output.index(i) + 1, input_dict[i]])
+
+        else:
+            join_table.append([sid, output.index(i) + 1, input_dict[i]])
+
+
+def read_si():
+    student_id = []
+    si = []
+    tech_types = []
+    join_tech = []
+    strength_types = []
+    join_strengths = []
+    weakness_types = []
+    join_weaknesses = []
+
+    for key in students[1:20]:
+        file = extract_json(key)
+        si.append(convert_si(file))
+        s_id = re.split("[/.]", key)[1]
+        student_id.append(s_id)
+
+        tech = file.get("tech_self_score")
+        if tech:
+            get_dict_types(s_id, tech, tech_types, join_tech)
+
+        strengths = file.get("strengths")
+        if strengths:
+            get_list_types(s_id, strengths, strength_types, join_strengths)
+
+        weaknesses = file.get("weaknesses")
+        if weaknesses:
+            get_list_types(s_id, weaknesses, weakness_types, join_weaknesses)
+
+    df = pd.concat(si).reset_index()
+    df2 = pd.DataFrame(student_id, columns=["student_id"])
+    output = pd.concat([df2, df], axis=1)
+    del output["index"]
+
+    tt_df = pd.DataFrame(tech_types, columns=["tech_name"])
+    jt_df = pd.DataFrame(join_tech, columns=["student_id", "tech_id", "tech_self_score"])
+
+    st_df = pd.DataFrame(strength_types, columns=["strength_name"])
+    js_df = pd.DataFrame(join_strengths, columns=["student_id", "strength_id"])
+
+    wt_df = pd.DataFrame(weakness_types, columns=["weakness_name"])
+    jw_df = pd.DataFrame(join_weaknesses, columns=["student_id", "weakness_id"])
+
+    id_name = pd.concat([output["student_id"], output["name"], output["date"]], axis=1)
+    return output, tt_df, jt_df, st_df, js_df, wt_df, jw_df, id_name
+
+
+def read_courses():
+    behaviour_scores = []
+    for key in courses[1:10]:
+        info = extract_csv(key)
+        current_df = info.melt(id_vars=["name", "trainer"], var_name="behaviours", value_name="score")
+        df2 = pd.DataFrame(current_df["behaviours"].str.split("_W").tolist(), columns=["behaviours", "week_id"])
+        current_df["behaviours"] = df2["behaviours"]
+        current_df["week_id"] = df2["week_id"]
+        behaviour_scores.append(current_df)
+
+    df = pd.concat(behaviour_scores)
+    trainers = df["trainer"].unique().tolist()
+    del df["trainer"]
+
+    trainers = pd.DataFrame(trainers, columns=["full_name"])
+    trainers["team"] = "trainer"
+
+    return df, trainers
+
+

@@ -102,7 +102,6 @@ def load_tech_types_table():
 # load_tech_types_table()
 
 
-
 def load_self_score():
     pass
 
@@ -176,7 +175,6 @@ def load_scores():
     df_scores = pd.DataFrame(student_scores, columns=['full_name', 'psych_score', 'psych_max_score',
                                                       'presentation_score', 'presentation_max_score'])
     logging.info(df_scores)
-
 
 
 def load_personal_information():
