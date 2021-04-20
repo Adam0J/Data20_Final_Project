@@ -1,0 +1,18 @@
+# packages that need to be installed:
+
+pandas
+sqlalchemy
+boto3
+
+
+# packages we are using but that should already be installed:
+
+# json
+# configparser
+# datetime
+# itertools
+# logging
+# pprint
+# re
+# time
+# unittest
