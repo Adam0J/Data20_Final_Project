@@ -52,7 +52,7 @@ def convert_si(info):
                 to_load.update({i: 1})
             elif info.get(i) in ["No", "Fail"]:
                 to_load.update({i: 0})
-            if "//" in info.get(i):
+            elif "//" in info.get(i):
                 temp = info.get(i).replace("//", "/")
                 temp = datetime.strptime(temp, "%d/%m/%Y").date()
                 to_load.update({i: temp})
@@ -270,7 +270,7 @@ def read_si():
     weakness_types = []
     join_weaknesses = []
 
-    for key in students[1:100]:
+    for key in students:
         file = extract_json(key)
         si.append(convert_si(file))
         s_id = re.split("[/.]", key)[1]
@@ -377,6 +377,8 @@ def gen_sparta(input_df, loc_info):
                             right_on=loc_info["full_name"].str.lower(), how="inner")
     del final_sparta["name"]
     del final_sparta["key_0"]
+    final_sparta.drop_duplicates(subset=["full_name", "date", "self_development", "geo_flex", "financial_support_self",
+                                         "result", "course_interest"])
     del final_sparta["full_name"]
 
     final_sparta.rename(columns={"date": "invited_date", "result": "passed"}, inplace=True)

@@ -30,9 +30,9 @@ pi = transformations.gen_pi()
 
 
 # Examples of loading some tables.
-# load.load(bt_df, 'behaviour_types', False) works just already loaded this
+load.load(bt_df, 'behaviour_types', False)
 load.load(sdi_df, 'sparta_day_information', False)
-# load.load(bs_df, 'behaviour_scores', False)
+load.load(bs_df, 'behaviour_scores', False)
 
 
 
