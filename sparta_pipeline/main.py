@@ -25,10 +25,11 @@ transformations.gen_sparta(talent_data[0], sparta_scores[0])
 transformations.sparta_scores(sparta_scores[1], talent_data[7])
 
 # Creating 'Courses', 'Behaviour Scores', 'Behaviour Types', half of 'Staff information' table
+behaviour_data = transformations.behaviour_tables()
 
 # Creating the contacts and personal info Dataframes
 pi = transformations.gen_pi()
-pprint(pi[0])
+
 
 
 
