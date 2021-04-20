@@ -1,11 +1,11 @@
 import pandas as pd
 from sqlalchemy import *
 from configparser import ConfigParser
-from sparta_pipeline import creating_tables, transformations, extract_files
+from sparta_pipeline import transformations, extract_files
 import re
 
 # Creates all the required tables in a SQL Server database.
-creating_tables.main()
+# creating_tables.main()
 
 # Get all the keys in the s3 bucket.
 transformations.sort_keys()
@@ -14,7 +14,7 @@ transformations.sort_keys()
 talent_data = transformations.read_si()
 
 # Creating 'Courses', 'Behaviour Scores', 'Behaviour Types', half of 'Staff information' table
-
+behaviour_data = transformations.behaviour_tables()
 
 
 
