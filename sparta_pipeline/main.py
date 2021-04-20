@@ -30,21 +30,5 @@ behaviour_data = transformations.behaviour_tables()
 # Creating the contacts and personal info Dataframes
 pi = transformations.gen_pi()
 
-
-
-
-
-
-
-
-#
-#     df = pd.DataFrame(set(new_column), columns=[col])
-#
-# df = pd.concat(si).reset_index()
-# df2 = pd.DataFrame(student_id, columns=["student_id"])
-# output = pd.concat([df2, df], axis=1)
-# print(output)
-
-# transformations.applicants
-# transformations.courses
-# transformations.s_day
+# Creating the final personal info Dataframe
+pprint(transformations.final_pi(pi[0], behaviour_data[3], talent_data[7]))

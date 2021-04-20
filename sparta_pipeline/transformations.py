@@ -52,6 +52,12 @@ def convert_si(info):
                 to_load.update({i: 1})
             elif info.get(i) in ["No", "Fail"]:
                 to_load.update({i: 0})
+            if "//" in info.get(i):
+                temp = info.get(i).replace("//", "/")
+                temp = datetime.strptime(temp, "%d/%m/%Y").date()
+                to_load.update({i: temp})
+            elif "/" in info.get(i):
+                to_load.update({i: datetime.strptime(info.get(i), "%d/%m/%Y").date()})
             else:
                 to_load.update({i: info[i]})
     return pd.DataFrame(to_load, index=[0])
@@ -83,7 +89,6 @@ def date_fix(date_string):
         return date_string
 
 
-
 def convert_pi(info):
     """
     :param info: this will be a dataframe
@@ -109,6 +114,7 @@ def convert_pi(info):
     contact_df = info[["email", "city", "address", "postcode", "phone_number"]].copy()
     info.drop(["email", "city", "address", "postcode", "phone_number"], axis=1, inplace=True)
     return info, contact_df
+
 
 def convert_weeks(info):
     """
@@ -222,7 +228,7 @@ def convert_staff_information():
 
 def staff_to_ids():
     """
-    Changes the convert_statt_information dataframe from 'full_name' and 'team' to 'full_name', 'team' and 'staff_id'
+    Changes the convert_staff_information dataframe from 'full_name' and 'team' to 'full_name', 'team' and 'staff_id'
     based on the staff table.
     """
     staff_info_df = convert_staff_information()
@@ -264,7 +270,7 @@ def read_si():
     weakness_types = []
     join_weaknesses = []
 
-    for key in students[1:20]:
+    for key in students[:501]:
         file = extract_json(key)
         si.append(convert_si(file))
         s_id = re.split("[/.]", key)[1]
@@ -398,5 +404,16 @@ def gen_pi():
     return pi, contacts
 
 
-def final_pi(input_df, staff_id_df, course_id_df, student_id_df):
-    pass
+def final_pi(input_df, course_id_df, student_id_df):
+    final = pd.merge(student_id_df, input_df, left_on=[student_id_df["name"].str.lower(),
+                                                       student_id_df["date"]],
+                     right_on=[input_df["full_name"].str.lower(), input_df["invited_date"]])
+    # trainers = bs_df["trainer"].unique().tolist()
+    # del bs_df["trainer"]
+    # trainers_df = pd.DataFrame(trainers, columns=["full_name"])
+    # trainers_df["team"] = "trainer"
+    # trainers_df["staff_id"] = trainers_df.index + 1
+    # trainers_df = trainers_df[["staff_id", "full_name", "team"]]
+    # trainers_df = trainers_df.astype({"staff_id": int})
+
+    return final
