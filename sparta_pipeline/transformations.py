@@ -1,24 +1,13 @@
-from sqlalchemy import *
-import pandas as pd
 from sparta_pipeline.extract_files import *
-import boto3
-from pprint import pprint
 import logging
-import time
-import itertools
 import re
 from datetime import datetime
 
-# data = extract_files.extract_json("Talent/10384.json")
-# dataCsv = extract_files.extract_csv("Academy/Data_28_2019-02-18.csv")
-# data_app = 'Talent/Feb2019Applicants.csv'
 logging.basicConfig(level=logging.INFO)
 
 pd.set_option("display.max_rows", None, "display.max_columns", None)
 
 si_columns = ["name", "date", "self_development", "geo_flex", "financial_support_self", "result", "course_interest"]
-weeks_columns = ["student_id", "week_id", "behaviour_id", "score"]
-courses_column = "name"
 
 students = []
 courses = []
@@ -116,86 +105,6 @@ def convert_pi(info):
     return info, contact_df
 
 
-def convert_weeks(info):
-    """
-    :param info: this will be a dataframe
-    :return: should be dataframe
-    """
-    # format the dataframe from wide to long
-    new_df = info.melt(id_vars=["name", "trainer"], var_name="behaviours", value_name="score")
-
-    # calculating number of weeks in the file
-    weeks = int(len(new_df) / 6)
-    number_of_weeks = int(weeks / len(info))
-
-    # iterating week_id across all students
-    lst = range(1, number_of_weeks + 1)
-    wks_col = list(
-        itertools.chain.from_iterable(itertools.repeat(x, int((len(new_df)) / number_of_weeks)) for x in lst))
-
-    # adding week_id column
-    new_df["week_id"] = wks_col
-
-    # Removing .._W<number> from behaviours
-    behaviours = ["Analytic", "Independent", "Determined", "Professional", "Studious", "Imaginative"]
-    new_b = behaviours * int(len(new_df) / 6)
-    new_df2 = pd.DataFrame(new_b, columns=["behaviours"])
-    new_df.update(new_df2)
-
-    # return dataframe and drop students who dropped out
-    return new_df.sort_values(by=["name", "week_id"]).dropna()
-
-
-def convert_courses(info):
-    """
-    probably won't need this
-    :param info:
-    :return:
-    """
-    to_load_courses = {}
-    courses = []
-    for entry in info:
-        if entry == "course_interest":
-            # only add course if it's not already been added
-            if str(info[entry]) not in courses:
-                to_load_courses.update({courses_column: info[entry]})
-                courses.append(info[entry])
-            else:
-                continue
-    return pd.DataFrame(to_load_courses, index=[0])
-
-
-def convert_tech_types():
-    to_load_tech_types = []
-    data = extract_json('Talent/10385.json')
-    for entry in data:
-        if entry == 'tech_self_score':
-            if data[entry] not in to_load_tech_types:
-                to_load_tech_types.extend(data[entry])
-    print(to_load_tech_types)
-
-
-def get_unique_column_csv(col, csv_keys):
-    new_column = []
-    for key in csv_keys:
-        file = extract_csv(key)
-        value = file.dropna()
-        new_column.extend(value[col].unique().tolist())
-
-    return set(new_column)
-
-
-def get_unique_column_json(col, json_keys):
-    new_column = []
-    for key in json_keys:
-        file = extract_json(key)
-        value = file.get(col)
-        if value:
-            new_column.extend(value)
-    df = pd.DataFrame(set(new_column), columns=[col])
-    return df
-
-
 def course_trainers():
     list_courses = []
     trainers = []
@@ -210,35 +119,6 @@ def course_trainers():
     df = pd.DataFrame(list_courses, columns=['course_name', 'trainer'])
 
     return df, set(trainers)
-
-
-def convert_staff_information():
-    talent_names = get_unique_column_csv('invited_by', applicants)
-    trainer_names = course_trainers()[1]
-    df = pd.DataFrame(talent_names, columns=['full_name'])
-    df["team"] = "Talent"
-    df2 = pd.DataFrame(trainer_names, columns=['full_name'])
-    df2["team"] = "Trainer"
-
-    final_df = pd.concat([df, df2]).reset_index()
-    final_df["index"] = final_df.index + 1
-
-    return final_df
-
-
-def staff_to_ids():
-    """
-    Changes the convert_staff_information dataframe from 'full_name' and 'team' to 'full_name', 'team' and 'staff_id'
-    based on the staff table.
-    """
-    staff_info_df = convert_staff_information()
-    course_info_df = course_trainers()[0]
-    staff_course = pd.merge(staff_info_df, course_info_df, left_on="full_name", right_on="trainer", how="right")
-
-    staff_course.drop(["full_name", "team", "trainer"], axis=1, inplace=True)
-    staff_course.rename(columns={"index": "staff_id"}, inplace=True)
-
-    logging.info(staff_course)
 
 
 def get_list_types(sid, input_list, output, join_table):
@@ -270,7 +150,7 @@ def read_si():
     weakness_types = []
     join_weaknesses = []
 
-    for key in students[:501]:
+    for key in students[:250]:
         file = extract_json(key)
         si.append(convert_si(file))
         s_id = re.split("[/.]", key)[1]
@@ -307,7 +187,7 @@ def read_si():
 
 
 def behaviour_tables():
-    behaviour_scores = []
+    beh_scores = []
     course_names = []
     all_students = []
     for key in courses:
@@ -316,7 +196,7 @@ def behaviour_tables():
         df2 = pd.DataFrame(current_df["behaviours"].str.split("_W").tolist(), columns=["behaviours", "week_id"])
         current_df["behaviours"] = df2["behaviours"]
         current_df["week_id"] = df2["week_id"]
-        behaviour_scores.append(current_df)
+        beh_scores.append(current_df)
         file_name_split = re.split("[/._]", key)[1:3]
 
         trainer = current_df["trainer"].iloc[0]  # Might be able to remove this as we already have a trainer df.
@@ -327,7 +207,7 @@ def behaviour_tables():
         all_students.append(course_students)
         course_names.append([course, trainer])
 
-    bs_df = pd.concat(behaviour_scores)
+    bs_df = pd.concat(beh_scores)
 
     behaviour_types = bs_df["behaviours"].unique().tolist()
     bt_df = pd.DataFrame(behaviour_types, columns=["behaviour"])
@@ -346,8 +226,9 @@ def behaviour_tables():
     bs_df = pd.merge(bs_df, bt_df, left_on="behaviours", right_on="behaviour", how="left")
     bs_df = bs_df.drop(["behaviours", "behaviour"], axis=1)
     bs_df = bs_df[["name", "week_id", "behaviour_id", "score"]]
+    bs_df.rename(columns={"score": "behaviour_score"}, inplace=True)
     bs_df = bs_df.dropna()
-    bs_df = bs_df.astype({"score": int, "week_id": int, "behaviour_id": int})
+    bs_df = bs_df.astype({"behaviour_score": int, "week_id": int, "behaviour_id": int})
     bs_df = bs_df.sort_values(by=["name", "week_id"])
 
     course_df = pd.DataFrame(course_names, columns=["course_name", "staff_name"])
@@ -385,7 +266,11 @@ def sparta_score_info():
 def gen_sparta(input_df, loc_info):
     final_sparta = pd.merge(input_df, loc_info, left_on=input_df["name"].str.lower(),
                             right_on=loc_info["full_name"].str.lower(), how="inner")
-    final_sparta = final_sparta.drop(["name", "key_0", "full_name"], axis=1)
+
+    final_sparta.drop_duplicates(subset=["full_name", "date", "self_development", "geo_flex", "financial_support_self",
+                                         "result", "course_interest"])
+    final_sparta.drop(["name", "key_0", "full_name"], axis=1, inplace=True)
+    final_sparta.rename(columns={"date": "invited_date", "result": "passed"}, inplace=True)
 
     return final_sparta
 
@@ -435,3 +320,12 @@ def final_pi(input_df, staff_id_df, course_id_df, student_id_df):
     final.rename(columns={"full_name_x": "full_name"}, inplace=True)
 
     return final, staff
+
+
+def behaviour_scores(input_df, id_df):
+    behaviour_scores_df = pd.merge(id_df, input_df, left_on=id_df["name"].str.lower(),
+                                   right_on=input_df["name"].str.lower(), how="inner")
+
+    behaviour_scores_df = behaviour_scores_df.drop(["key_0", "name_x", "date", "name_y"], axis=1)
+
+    return behaviour_scores_df
