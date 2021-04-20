@@ -28,6 +28,7 @@ bt_df = behaviour_data[2]
 # Creating the contacts and personal info Dataframes
 pi = transformations.gen_pi()
 
+
 # Examples of loading some tables.
 # load.load(bt_df, 'behaviour_types', False) works just already loaded this
 load.load(sdi_df, 'sparta_day_information', False)
@@ -37,14 +38,4 @@ load.load(sdi_df, 'sparta_day_information', False)
 
 
 
-#
-#     df = pd.DataFrame(set(new_column), columns=[col])
-#
-# df = pd.concat(si).reset_index()
-# df2 = pd.DataFrame(student_id, columns=["student_id"])
-# output = pd.concat([df2, df], axis=1)
-# print(output)
 
-# transformations.applicants
-# transformations.courses
-# transformations.s_day
