@@ -270,7 +270,7 @@ def read_si():
     weakness_types = []
     join_weaknesses = []
 
-    for key in students[900:1200]:
+    for key in students:
         file = extract_json(key)
         si.append(convert_si(file))
         s_id = re.split("[/.]", key)[1]
