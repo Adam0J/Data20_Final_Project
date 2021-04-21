@@ -1,5 +1,6 @@
 from sparta_pipeline import creating_tables, transformations, load
 import time
+import re
 
 # Creates all the required tables in a SQL Server database.
 # creating_tables.main() # fix this
@@ -48,6 +49,9 @@ self_score = talent_data[2]
 student_strengths = talent_data[4]
 student_weaknesses = talent_data[6]
 
+print([type(i) for i in personal_information["dob"]])
+print(sparta_day_information)
+
 # Examples of loading some tables.
 # load.load(tech_types, 'tech_types')
 # load.load(strength_types, 'strength_types')
@@ -60,4 +64,4 @@ student_weaknesses = talent_data[6]
 load.load(personal_information, 'personal_information')
 
 
-# load.load(behaviour_scores, 'behaviour_scores', False)
+
