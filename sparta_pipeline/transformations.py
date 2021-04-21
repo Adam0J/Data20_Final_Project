@@ -105,22 +105,6 @@ def convert_pi(info):
     return info, contact_df
 
 
-def course_trainers():
-    list_courses = []
-    trainers = []
-    for key in courses:
-        trainer = extract_csv(key)["trainer"].unique().tolist()[0]
-        temp = key[8:-15].split('_')
-        course_code = temp[0] + ' ' + temp[1]
-
-        list_courses.append([course_code, trainer])
-        trainers.append(trainer)
-
-    df = pd.DataFrame(list_courses, columns=['course_name', 'trainer'])
-
-    return df, set(trainers)
-
-
 def get_list_types(sid, input_list, output, join_table):
     for i in input_list:
         if i not in output:
