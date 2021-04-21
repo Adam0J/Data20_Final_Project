@@ -118,10 +118,16 @@ def get_dict_types(sid, input_dict, output, join_table):
     for i in list(input_dict.keys()):
         if i not in output:
             output.append(i)
-            join_table.append([sid, output.index(i) + 1, input_dict[i]])
+            if input_dict[i] > 10:
+                join_table.append([sid, output.index(i) + 1, 10])
+            else:
+                join_table.append([sid, output.index(i) + 1, input_dict[i]])
 
         else:
-            join_table.append([sid, output.index(i) + 1, input_dict[i]])
+            if input_dict[i] > 10:
+                join_table.append([sid, output.index(i) + 1, 10])
+            else:
+                join_table.append([sid, output.index(i) + 1, input_dict[i]])
 
 
 def read_si():
