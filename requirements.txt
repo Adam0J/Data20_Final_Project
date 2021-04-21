@@ -1,9 +1,9 @@
 # packages that need to be installed:
 
-pandas
-sqlalchemy
-boto3
-
+pandas~=1.2.3
+sqlalchemy~=1.4.7
+boto3~=1.17.40
+numpy~=1.20.1
 
 # packages we are using but that should already be installed:
 
