@@ -173,6 +173,8 @@ def read_si():
     jw_df = pd.DataFrame(join_weaknesses, columns=["student_id", "weakness_id"])
 
     id_name = pd.concat([output["student_id"], output["name"], output["date"]], axis=1)
+
+
     return output, tt_df, jt_df, st_df, js_df, wt_df, jw_df, id_name
 
 
@@ -322,7 +324,8 @@ def final_pi(input_df, staff_id_df, course_id_df):
     final.rename(columns={"full_name_x": "full_name"}, inplace=True)
     final.drop_duplicates(subset=final.columns.difference(["student_id"]))
 
-    final.drop_duplicates(subset=["student_id"])
+    final.drop_duplicates()
+
     final["full_name"] = final["full_name"].str.title()
 
     return final, staff
