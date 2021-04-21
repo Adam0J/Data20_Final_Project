@@ -51,21 +51,21 @@ student_weaknesses = talent_data[6]
 
 
 # Examples of loading some tables.
-# load.load(tech_types, 'tech_types')
-# load.load(strength_types, 'strength_types')
-# load.load(weakness_types, 'weakness_types')
-# load.load(behaviour_types, 'behaviour_types')
-# load.load(sparta_day_information, 'sparta_day_information')
-# load.load(staff_information, 'staff_information')
-# load.load(courses, 'courses')
-# load.load(personal_information, 'personal_information')
+load.load(tech_types, 'tech_types')
+load.load(strength_types, 'strength_types')
+load.load(weakness_types, 'weakness_types')
+load.load(behaviour_types, 'behaviour_types')
+load.load(sparta_day_information, 'sparta_day_information')
+load.load(staff_information, 'staff_information')
+load.load(courses, 'courses')
+load.load(personal_information, 'personal_information')
 
 load.load(contact_details, 'contact_details')
 
-# load.load(behaviour_scores, 'behaviour_scores')
-# load.load(sparta_day_scores, 'sparta_day_scores')
-# load.load(self_score, 'self_score')
-# load.load(student_strengths, 'student_strengths')
-# load.load(student_weaknesses, 'student_weaknesses')
+load.load(behaviour_scores, 'behaviour_scores')
+load.load(sparta_day_scores, 'sparta_day_scores')
+load.load(self_score, 'self_score')
+load.load(student_strengths, 'student_strengths')
+load.load(student_weaknesses, 'student_weaknesses')
 
 

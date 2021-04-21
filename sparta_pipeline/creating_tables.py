@@ -29,7 +29,7 @@ def create_staff():
 def create_contacts():
     Table(
         "contact_details", meta,
-        Column("student_id", Integer, ForeignKey("personal_information.student_id"), primary_key=True),
+        Column("student_id", Integer, ForeignKey("personal_information.student_id")),
         Column('email', String),
         Column('city', String),
         Column('address', String),
