@@ -1,6 +1,5 @@
 from sparta_pipeline import creating_tables, transformations, load
 import time
-import re
 
 # Creates all the required tables in a SQL Server database.
 creating_tables.main() # fix this
@@ -48,7 +47,6 @@ sparta_day_scores = sds_df
 self_score = talent_data[2]
 student_strengths = talent_data[4]
 student_weaknesses = talent_data[6]
-
 
 # Examples of loading some tables.
 load.load(tech_types, 'tech_types')
