@@ -49,9 +49,6 @@ self_score = talent_data[2]
 student_strengths = talent_data[4]
 student_weaknesses = talent_data[6]
 
-print([type(i) for i in personal_information["dob"]])
-print(sparta_day_information)
-
 # Examples of loading some tables.
 # load.load(tech_types, 'tech_types')
 # load.load(strength_types, 'strength_types')
@@ -61,7 +58,8 @@ print(sparta_day_information)
 # load.load(staff_information, 'staff_information')
 # load.load(courses, 'courses')
 
-load.load(personal_information, 'personal_information')
+#
+# load.load(personal_information, 'personal_information')
 
 
 
