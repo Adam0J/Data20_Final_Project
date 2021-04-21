@@ -158,6 +158,7 @@ def read_si():
         if weaknesses:
             get_list_types(s_id, weaknesses, weakness_types, join_weaknesses)
 
+    si = list(set(si))
     df = pd.concat(si).reset_index()
     df2 = pd.DataFrame(student_id, columns=["student_id"], dtype=int)
     output = pd.concat([df2, df], axis=1)
@@ -320,7 +321,7 @@ def final_pi(input_df, staff_id_df, course_id_df):
     final.drop(["key_0", "invited_date", "name"], axis=1, inplace=True)
     final.rename(columns={"full_name_x": "full_name"}, inplace=True)
     final.drop_duplicates(subset=final.columns.difference(["student_id"]))
-    final.drop_duplicates(subset=["student_id"])
+    final.drop_duplicates()
     final["full_name"] = final["full_name"].str.title()
 
     return final, staff
