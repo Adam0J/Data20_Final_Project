@@ -100,9 +100,7 @@ def convert_pi(info):
     del info["month"]
     info.rename(columns={"name": "full_name"}, inplace=True)
 
-    contact_df = info[["email", "city", "address", "postcode", "phone_number"]].copy()
-    info.drop(["email", "city", "address", "postcode", "phone_number"], axis=1, inplace=True)
-    return info, contact_df
+    return info
 
 
 def get_list_types(sid, input_list, output, join_table):
@@ -267,34 +265,34 @@ def sparta_scores(input_df, id_df):
     return final_score
 
 
-def gen_pi():
+def gen_pi(student_id_df):
     pi_list = []
-    contacts_list = []
     for i in applicants:
         d = extract_csv(i)
         total = convert_pi(d)
-        pi_list.append(total[0])
-        contacts_list.append(total[1])
+        pi_list.append(total)
     pi = pd.concat(pi_list)
-    contacts = pd.concat(contacts_list)
 
-    return pi, contacts
+    new_pi = pd.merge(student_id_df, pi, left_on=[student_id_df["name"].str.lower(),
+                                                  student_id_df["date"]],
+                      right_on=[pi["full_name"].str.lower(), pi["invited_date"]])
+    new_pi.drop(["key_0", "key_1", "date", "id", "name"], axis=1, inplace=True)
+
+    contacts = new_pi[["student_id", "email", "city", "address", "postcode", "phone_number"]].copy()
+    new_pi.drop(["email", "city", "address", "postcode", "phone_number"], axis=1, inplace=True)
+    return new_pi, contacts
 
 
-def final_pi(input_df, staff_id_df, course_id_df, student_id_df):
-    with_sid = pd.merge(student_id_df, input_df, left_on=[student_id_df["name"].str.lower(),
-                                                          student_id_df["date"]],
-                        right_on=[input_df["full_name"].str.lower(), input_df["invited_date"]])
-    with_sid = with_sid.drop(["key_0", "key_1", "date", "id", "name"], axis=1)
+def final_pi(input_df, staff_id_df, course_id_df):
 
-    trainers = with_sid["invited_by"].unique().tolist()
+    trainers = input_df["invited_by"].unique().tolist()
     trainers_df = pd.DataFrame(trainers, columns=["full_name"])
     trainers_df["team"] = "talent"
     staff = pd.concat([staff_id_df, trainers_df]).reset_index()
     staff["staff_id"] = staff.index + 1
     del staff["index"]
 
-    with_tid = pd.merge(with_sid, staff, left_on=with_sid["invited_by"],
+    with_tid = pd.merge(input_df, staff, left_on=input_df["invited_by"],
                         right_on=staff["full_name"], how="inner")
     with_tid = with_tid.drop(["key_0", "invited_by", "full_name_y", "team"], axis=1)
 
