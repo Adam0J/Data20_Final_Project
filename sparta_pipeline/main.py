@@ -39,9 +39,9 @@ weakness_types = talent_data[5]
 behaviour_types = behaviour_data[2]
 sparta_day_information = sdi_df
 staff_information = final_personal_info[1]
+courses = behaviour_data[3]
 personal_information = final_personal_info[0]
 contact_details = temp_pi[1]
-courses = behaviour_data[3]
 behaviour_scores = bs_df
 sparta_day_scores = sds_df
 self_score = talent_data[2]
@@ -49,10 +49,15 @@ student_strengths = talent_data[4]
 student_weaknesses = talent_data[6]
 
 # Examples of loading some tables.
-# load.load(behaviour_types, 'behaviour_types', False)
-# load.load(sparta_day_information, 'sparta_day_information', False)
-# load.load(behaviour_scores, 'behaviour_scores', False)
+# load.load(tech_types, 'tech_types')
+# load.load(strength_types, 'strength_types')
+# load.load(weakness_types, 'weakness_types')
+# load.load(behaviour_types, 'behaviour_types')
+# load.load(sparta_day_information, 'sparta_day_information')
+# load.load(staff_information, 'staff_information')
+# load.load(courses, 'courses')
 
-# load.load(tech_types, 'tech_types', False)
-# load.load(strength_types, 'strength_types', False)
-load.load(weakness_types, 'weakness_types', False)
+load.load(personal_information, 'personal_information')
+
+
+# load.load(behaviour_scores, 'behaviour_scores', False)

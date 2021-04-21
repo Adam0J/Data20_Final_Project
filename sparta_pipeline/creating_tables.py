@@ -41,7 +41,7 @@ def create_contacts():
 def create_courses():
     Table(
         'courses', meta,
-        Column('course_id', Integer, primary_key=True),
+        Column('course_id', Integer, primary_key=True, autoincrement=False),
         Column('course_name', String),
         Column("staff_id", Integer, ForeignKey("staff_information.staff_id"))
     )
