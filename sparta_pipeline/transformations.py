@@ -2,6 +2,7 @@ from sparta_pipeline.extract_files import *
 import logging
 import re
 from datetime import datetime
+import numpy as np
 
 logging.basicConfig(level=logging.INFO)
 
@@ -99,6 +100,7 @@ def convert_pi(info):
     info.update(new)
     del info["month"]
     info.rename(columns={"name": "full_name"}, inplace=True)
+    info["dob"] = pd.to_datetime(info["dob"])
 
     return info
 
@@ -132,7 +134,7 @@ def read_si():
     weakness_types = []
     join_weaknesses = []
 
-    for key in students[:250]:
+    for key in students[:500]:
         file = extract_json(key)
         si.append(convert_si(file))
         s_id = re.split("[/.]", key)[1]
@@ -242,7 +244,15 @@ def sparta_score_info():
         current = read_sparta_day(i)
         locations.append(current[0])
         scores.append(current[1])
-    return pd.concat(locations), pd.concat(scores)
+    loc = pd.concat(locations)
+    sc = pd.concat(scores)
+
+    sc["full_name"] = sc["full_name"].str.replace("[;.]| '", "", regex=True)
+    sc["full_name"] = sc["full_name"].str.replace("' ", "'", regex=True)
+    sc["full_name"] = sc["full_name"].str.replace(" - ", "-", regex=True)
+    sc["full_name"] = sc["full_name"].str.replace("\AD'", "D", regex=True)
+
+    return loc, sc
 
 
 def gen_sparta(input_df, loc_info):
@@ -253,6 +263,7 @@ def gen_sparta(input_df, loc_info):
                                          "result", "course_interest"])
     final_sparta.drop(["name", "key_0", "full_name"], axis=1, inplace=True)
     final_sparta.rename(columns={"date": "invited_date", "result": "passed"}, inplace=True)
+    final_sparta["invited_date"] = final_sparta["invited_date"].replace("Not Invited", np.nan)
 
     return final_sparta
 
@@ -280,6 +291,8 @@ def gen_pi(student_id_df):
 
     contacts = new_pi[["student_id", "email", "city", "address", "postcode", "phone_number"]].copy()
     new_pi.drop(["email", "city", "address", "postcode", "phone_number"], axis=1, inplace=True)
+    contacts.drop_duplicates(subset=contacts.columns.difference(["student_id"]))
+
     return new_pi, contacts
 
 
@@ -300,6 +313,7 @@ def final_pi(input_df, staff_id_df, course_id_df):
                      right_on=course_id_df["name"].str.lower(), how="inner")
     final.drop(["key_0", "invited_date", "name"], axis=1, inplace=True)
     final.rename(columns={"full_name_x": "full_name"}, inplace=True)
+    final.drop_duplicates(subset=final.columns.difference(["student_id"]))
 
     return final, staff
 
