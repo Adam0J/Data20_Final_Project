@@ -174,6 +174,8 @@ def read_si():
 
     id_name = pd.concat([output["student_id"], output["name"], output["date"]], axis=1)
 
+    output.drop_duplicates()
+
 
     return output, tt_df, jt_df, st_df, js_df, wt_df, jw_df, id_name
 
@@ -267,7 +269,7 @@ def gen_sparta(input_df, loc_info):
     final_sparta = pd.merge(input_df, loc_info, left_on=input_df["name"].str.lower(),
                             right_on=loc_info["full_name"].str.lower(), how="inner")
 
-    final_sparta.drop_duplicates(subset=final_sparta.columns.difference(["student_id"]))
+    final_sparta.drop_duplicates(subset=["student_id"])
     final_sparta.drop(["name", "key_0", "full_name"], axis=1, inplace=True)
     final_sparta.rename(columns={"date": "invited_date", "result": "passed"}, inplace=True)
     final_sparta["invited_date"] = final_sparta["invited_date"].replace("Not Invited", np.nan)
