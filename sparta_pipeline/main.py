@@ -2,7 +2,7 @@ from sparta_pipeline import creating_tables, transformations, load
 import time
 
 # Creates all the required tables in a SQL Server database.
-creating_tables.main()
+# creating_tables.main()
 
 # Get all the keys in the s3 bucket.
 transformations.sort_keys()
@@ -26,10 +26,10 @@ bs_df = transformations.behaviour_scores(behaviour_data[0], talent_data[7])
 bt_df = behaviour_data[2]
 
 # Creating the contacts and personal info Dataframes
-temp_pi = transformations.gen_pi()
+temp_pi = transformations.gen_pi(talent_data[7])
 
 # Creating the final personal info Dataframe
-final_personal_info = transformations.final_pi(temp_pi[0], behaviour_data[1], behaviour_data[4], talent_data[7])
+final_personal_info = transformations.final_pi(temp_pi[0], behaviour_data[1], behaviour_data[4])
 
 # list all of the dataframes to be loaded
 
