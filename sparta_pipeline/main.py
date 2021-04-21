@@ -2,7 +2,7 @@ from sparta_pipeline import creating_tables, transformations, load
 import time
 
 # Creates all the required tables in a SQL Server database.
-# creating_tables.main()
+# creating_tables.main() # fix this
 
 # Get all the keys in the s3 bucket.
 transformations.sort_keys()
