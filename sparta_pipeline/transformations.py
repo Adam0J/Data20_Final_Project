@@ -153,7 +153,7 @@ def read_si():
             get_list_types(s_id, weaknesses, weakness_types, join_weaknesses)
 
     df = pd.concat(si).reset_index()
-    df2 = pd.DataFrame(student_id, columns=["student_id"])
+    df2 = pd.DataFrame(student_id, columns=["student_id"], dtype=int)
     output = pd.concat([df2, df], axis=1)
     del output["index"]
 
@@ -259,8 +259,7 @@ def gen_sparta(input_df, loc_info):
     final_sparta = pd.merge(input_df, loc_info, left_on=input_df["name"].str.lower(),
                             right_on=loc_info["full_name"].str.lower(), how="inner")
 
-    final_sparta.drop_duplicates(subset=["full_name", "date", "self_development", "geo_flex", "financial_support_self",
-                                         "result", "course_interest"])
+    final_sparta.drop_duplicates(subset=final_sparta.columns.difference(["student_id"]))
     final_sparta.drop(["name", "key_0", "full_name"], axis=1, inplace=True)
     final_sparta.rename(columns={"date": "invited_date", "result": "passed"}, inplace=True)
     final_sparta["invited_date"] = final_sparta["invited_date"].replace("Not Invited", np.nan)
@@ -292,6 +291,7 @@ def gen_pi(student_id_df):
     contacts = new_pi[["student_id", "email", "city", "address", "postcode", "phone_number"]].copy()
     new_pi.drop(["email", "city", "address", "postcode", "phone_number"], axis=1, inplace=True)
     contacts.drop_duplicates(subset=contacts.columns.difference(["student_id"]))
+    contacts["address"] = contacts["address"].str.lower().title()
 
     return new_pi, contacts
 
@@ -314,6 +314,7 @@ def final_pi(input_df, staff_id_df, course_id_df):
     final.drop(["key_0", "invited_date", "name"], axis=1, inplace=True)
     final.rename(columns={"full_name_x": "full_name"}, inplace=True)
     final.drop_duplicates(subset=final.columns.difference(["student_id"]))
+    final["full_name"] = final["full_name"].str.lower().title()
 
     return final, staff
 
