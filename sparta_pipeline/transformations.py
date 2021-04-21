@@ -158,7 +158,6 @@ def read_si():
         if weaknesses:
             get_list_types(s_id, weaknesses, weakness_types, join_weaknesses)
 
-    si = list(set(si))
     df = pd.concat(si).reset_index()
     df2 = pd.DataFrame(student_id, columns=["student_id"], dtype=int)
     output = pd.concat([df2, df], axis=1)
@@ -174,6 +173,8 @@ def read_si():
     jw_df = pd.DataFrame(join_weaknesses, columns=["student_id", "weakness_id"])
 
     id_name = pd.concat([output["student_id"], output["name"], output["date"]], axis=1)
+    output.drop_duplicates()
+
     return output, tt_df, jt_df, st_df, js_df, wt_df, jw_df, id_name
 
 
@@ -266,7 +267,7 @@ def gen_sparta(input_df, loc_info):
     final_sparta = pd.merge(input_df, loc_info, left_on=input_df["name"].str.lower(),
                             right_on=loc_info["full_name"].str.lower(), how="inner")
 
-    final_sparta.drop_duplicates(subset=final_sparta.columns.difference(["student_id"]))
+    final_sparta.drop_duplicates(subset=["student_id"])
     final_sparta.drop(["name", "key_0", "full_name"], axis=1, inplace=True)
     final_sparta.rename(columns={"date": "invited_date", "result": "passed"}, inplace=True)
     final_sparta["invited_date"] = final_sparta["invited_date"].replace("Not Invited", np.nan)
