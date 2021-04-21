@@ -174,8 +174,6 @@ def read_si():
 
     id_name = pd.concat([output["student_id"], output["name"], output["date"]], axis=1)
 
-    output.drop_duplicates()
-
 
     return output, tt_df, jt_df, st_df, js_df, wt_df, jw_df, id_name
 
@@ -268,7 +266,9 @@ def sparta_score_info():
 def gen_sparta(input_df, loc_info):
     final_sparta = pd.merge(input_df, loc_info, left_on=input_df["name"].str.lower(),
                             right_on=loc_info["full_name"].str.lower(), how="inner")
-    final_sparta.drop_duplicates(subset=["student_id"])
+
+    final_sparta = final_sparta.drop_duplicates(subset=["student_id"])
+
     final_sparta.drop(["name", "key_0", "full_name"], axis=1, inplace=True)
     final_sparta.rename(columns={"date": "invited_date", "result": "passed"}, inplace=True)
     final_sparta["invited_date"] = final_sparta["invited_date"].replace("Not Invited", np.nan)
@@ -299,7 +299,8 @@ def gen_pi(student_id_df):
 
     contacts = new_pi[["student_id", "email", "city", "address", "postcode", "phone_number"]].copy()
     new_pi.drop(["email", "city", "address", "postcode", "phone_number"], axis=1, inplace=True)
-    contacts.drop_duplicates(subset=contacts.columns.difference(["student_id"]))
+
+    contacts = contacts.drop_duplicates(subset=contacts.columns.difference(["student_id"]))
 
     contacts["address"] = contacts["address"].str.title()
 
@@ -323,9 +324,8 @@ def final_pi(input_df, staff_id_df, course_id_df):
                      right_on=course_id_df["name"].str.lower(), how="inner")
     final.drop(["key_0", "invited_date", "name"], axis=1, inplace=True)
     final.rename(columns={"full_name_x": "full_name"}, inplace=True)
-    final.drop_duplicates(subset=final.columns.difference(["student_id"]))
 
-    final.drop_duplicates()
+    final = final.drop_duplicates(subset=final.columns.difference(["student_id"]))
 
     final["full_name"] = final["full_name"].str.title()
 
