@@ -101,6 +101,7 @@ def convert_pi(info):
     del info["month"]
     info.rename(columns={"name": "full_name"}, inplace=True)
     info["dob"] = pd.to_datetime(info["dob"])
+    info["invited_date"] = info["invited_date"].replace("Not Invited", np.nan)
 
     return info
 
@@ -161,6 +162,7 @@ def read_si():
     df = pd.concat(si).reset_index()
     df2 = pd.DataFrame(student_id, columns=["student_id"], dtype=int)
     output = pd.concat([df2, df], axis=1)
+    output["date"] = pd.to_datetime(output["date"])
     del output["index"]
 
     tt_df = pd.DataFrame(tech_types, columns=["tech_name"])
@@ -241,7 +243,13 @@ def read_sparta_day(key):
     names = [re.split(" - ", i)[0] for i in file_contents[3:]]
     name_df = pd.DataFrame(names, columns=["full_name"])
     name_df["location"] = file_contents[1]
-    return name_df, convert_scores(file_contents)
+    name_df["sparta_day_date"] = file_contents[0]
+    name_df["sparta_day_date"] = pd.to_datetime(name_df["sparta_day_date"], format="%A %d %B %Y")
+    score_df = convert_scores(file_contents)
+    score_df["sparta_day_date"] = file_contents[0]
+    score_df["sparta_day_date"] = pd.to_datetime(score_df["sparta_day_date"], format="%A %d %B %Y")
+
+    return name_df, score_df
 
 
 def sparta_score_info():
@@ -263,21 +271,20 @@ def sparta_score_info():
 
 
 def gen_sparta(input_df, loc_info):
-    final_sparta = pd.merge(input_df, loc_info, left_on=input_df["name"].str.lower(),
-                            right_on=loc_info["full_name"].str.lower(), how="inner")
+    final_sparta = pd.merge(input_df, loc_info, left_on=[input_df["name"].str.lower(), input_df["date"]],
+                            right_on=[loc_info["full_name"].str.lower(), loc_info["sparta_day_date"]], how="inner")
 
     final_sparta = final_sparta.drop_duplicates(subset=["student_id"])
-    final_sparta.drop(["name", "key_0", "full_name"], axis=1, inplace=True)
+    final_sparta.drop(["name", "key_0", "key_1", "full_name", "sparta_day_date"], axis=1, inplace=True)
     final_sparta.rename(columns={"date": "invited_date", "result": "passed"}, inplace=True)
-    final_sparta["invited_date"] = final_sparta["invited_date"].replace("Not Invited", np.nan)
 
     return final_sparta
 
 
 def sparta_scores(input_df, id_df):
-    final_score = pd.merge(id_df, input_df, left_on=id_df["name"].str.lower(),
-                           right_on=input_df["full_name"].str.lower(), how="inner")
-    final_score = final_score.drop(["key_0", "name", "date", "full_name"], axis=1)
+    final_score = pd.merge(id_df, input_df, left_on=[id_df["name"].str.lower(), id_df["date"]],
+                           right_on=[input_df["full_name"].str.lower(), input_df["sparta_day_date"]], how="inner")
+    final_score = final_score.drop(["key_0", "key_1", "name", "date", "full_name", "sparta_day_date"], axis=1)
 
     return final_score
 
@@ -289,10 +296,11 @@ def gen_pi(student_id_df):
         total = convert_pi(d)
         pi_list.append(total)
     pi = pd.concat(pi_list)
+    pi["invited_date"] = pd.to_datetime(pi["invited_date"])
 
     new_pi = pd.merge(student_id_df, pi, left_on=[student_id_df["name"].str.lower(),
                                                   student_id_df["date"]],
-                      right_on=[pi["full_name"].str.lower(), pi["invited_date"]])
+                      right_on=[pi["full_name"].str.lower(), pi["invited_date"]], how="right")
     new_pi.drop(["key_0", "key_1", "date", "id", "name"], axis=1, inplace=True)
 
     contacts = new_pi[["student_id", "email", "city", "address", "postcode", "phone_number"]].copy()
