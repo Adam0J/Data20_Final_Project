@@ -158,10 +158,10 @@ def read_si():
     tt_df = pd.DataFrame(tech_types, columns=["tech_name"])
     jt_df = pd.DataFrame(join_tech, columns=["student_id", "tech_id", "tech_self_score"])
 
-    st_df = pd.DataFrame(strength_types, columns=["strength_name"])
+    st_df = pd.DataFrame(strength_types, columns=["strength"])
     js_df = pd.DataFrame(join_strengths, columns=["student_id", "strength_id"])
 
-    wt_df = pd.DataFrame(weakness_types, columns=["weakness_name"])
+    wt_df = pd.DataFrame(weakness_types, columns=["weakness"])
     jw_df = pd.DataFrame(join_weaknesses, columns=["student_id", "weakness_id"])
 
     id_name = pd.concat([output["student_id"], output["name"], output["date"]], axis=1)

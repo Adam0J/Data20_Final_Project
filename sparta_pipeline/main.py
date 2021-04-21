@@ -49,6 +49,9 @@ student_strengths = talent_data[4]
 student_weaknesses = talent_data[6]
 
 # Examples of loading some tables.
-load.load(behaviour_types, 'behaviour_types', False)
-load.load(sparta_day_information, 'sparta_day_information', False)
-load.load(behaviour_scores, 'behaviour_scores', False)
+# load.load(behaviour_types, 'behaviour_types', False)
+# load.load(sparta_day_information, 'sparta_day_information', False)
+# load.load(behaviour_scores, 'behaviour_scores', False)
+
+# load.load(tech_types, 'tech_types', False)
+load.load(strength_types, 'strength_types', False)
