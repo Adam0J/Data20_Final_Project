@@ -54,4 +54,5 @@ student_weaknesses = talent_data[6]
 # load.load(behaviour_scores, 'behaviour_scores', False)
 
 # load.load(tech_types, 'tech_types', False)
-load.load(strength_types, 'strength_types', False)
+# load.load(strength_types, 'strength_types', False)
+load.load(weakness_types, 'weakness_types', False)
