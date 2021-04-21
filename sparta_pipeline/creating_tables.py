@@ -168,7 +168,7 @@ def main():
     create_sparta_scores()
     create_personal_information()
     create_contacts()
-    meta.create_all(engine)
+    meta.create_all(engine, checkfirst=True)
 
 
 if __name__ == "__main__":

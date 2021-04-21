@@ -134,7 +134,7 @@ def read_si():
     weakness_types = []
     join_weaknesses = []
 
-    for key in students[:500]:
+    for key in students:
         file = extract_json(key)
         si.append(convert_si(file))
         s_id = re.split("[/.]", key)[1]
@@ -291,7 +291,7 @@ def gen_pi(student_id_df):
     contacts = new_pi[["student_id", "email", "city", "address", "postcode", "phone_number"]].copy()
     new_pi.drop(["email", "city", "address", "postcode", "phone_number"], axis=1, inplace=True)
     contacts.drop_duplicates(subset=contacts.columns.difference(["student_id"]))
-    contacts["address"] = contacts["address"].str.lower().title()
+    contacts["address"] = contacts["address"].str.lower().str.title()
 
     return new_pi, contacts
 
@@ -314,7 +314,7 @@ def final_pi(input_df, staff_id_df, course_id_df):
     final.drop(["key_0", "invited_date", "name"], axis=1, inplace=True)
     final.rename(columns={"full_name_x": "full_name"}, inplace=True)
     final.drop_duplicates(subset=final.columns.difference(["student_id"]))
-    final["full_name"] = final["full_name"].str.lower().title()
+    final["full_name"] = final["full_name"].str.lower().str.title()
 
     return final, staff
 
