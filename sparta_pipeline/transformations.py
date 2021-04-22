@@ -1,12 +1,14 @@
 from sparta_pipeline.extract_files import *
+from sparta_pipeline.config_manager import *
 import logging
 import re
+import time
 from datetime import datetime
 import numpy as np
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=log())
 
-pd.set_option("display.max_rows", None, "display.max_columns", None)
+pd.set_option("display.max_rows", 4000, "display.max_columns", None)
 
 si_columns = ["name", "date", "self_development", "geo_flex", "financial_support_self", "result", "course_interest"]
 
@@ -17,6 +19,11 @@ s_day = []
 
 
 def sort_keys():
+    logging.info(f"Sorting keys from S3 at {time.time()}")
+    """
+    Function that sorts through the entire list of keys in S3 bucket and puts them in their respective lists
+    based on the data
+    """
     for i in contents:
         if re.findall(".json$", i.key):
             students.append(i.key)
@@ -30,8 +37,10 @@ def sort_keys():
 
 def convert_si(info):
     """
-    :param info: dictionary of a student's info
-    :return: dataframe of a single student to load, excludes primary/foreign keys
+    Function that takes a dictionary obtained from the student's sparta day info json file and converts it to a
+    dataframe. Replaces yes/no and pass/fail to bitwise booleans and cleans the dates to convert to date objects
+    :param info: Dictionary of a student's info
+    :return: Dataframe of a single student to load, excludes primary/foreign keys
     """
     to_load = {}
     for i in si_columns:
@@ -55,8 +64,9 @@ def convert_si(info):
 
 def convert_scores(info):
     """
-    :param info: this will be a list
-    :return: will be dataframe
+    Takes the contents of the sparta day scores text files and produces the dataframe of their scores
+    :param info: List
+    :return: Dataframe
     """
     new_list = [re.split(', | -  |: |/', i) for i in info]
     student_scores = []
@@ -81,8 +91,9 @@ def date_fix(date_string):
 
 def convert_pi(info):
     """
-    :param info: this will be a dataframe
-    :return: will be dataframe
+    Cleaning and converting personal info dataframe gotten from the CSV files.
+    :param info: Dataframe
+    :return: Dataframe
     """
     info["phone_number"] = info["phone_number"].fillna("0")
     info["invited_date"] = info["invited_date"].fillna("Not")
@@ -107,6 +118,14 @@ def convert_pi(info):
 
 
 def get_list_types(sid, input_list, output, join_table):
+    """
+    Creating the join table between two tables by taking the first table's data and creating a second table of unique
+    values based on that data and then creating a join table that connects the two.
+    :param sid: student id
+    :param input_list: the left list to be joined
+    :param output: the right list to join
+    :param join_table: the join table
+    """
     for i in input_list:
         if i not in output:
             output.append(i)
@@ -116,6 +135,14 @@ def get_list_types(sid, input_list, output, join_table):
 
 
 def get_dict_types(sid, input_dict, output, join_table):
+    """
+    Creating the join table between two tables by taking the first table's data and creating a second table of unique
+    values based on that data and then creating a join table that connects the two. For dictionaries
+    :param sid: student id
+    :param input_dict: the left list to be joined
+    :param output: the right list to join
+    :param join_table: the join table
+    """
     for i in list(input_dict.keys()):
         if i not in output:
             output.append(i)
@@ -132,6 +159,12 @@ def get_dict_types(sid, input_dict, output, join_table):
 
 
 def read_si():
+    logging.info(f"Cleaning, converting and creating sparta day information dataframes at {time.time()}")
+    """
+    Function that reads the sparta day information json files and creates all the requisite tables from those files.
+    :return: Dataframes: Sparta day information, tech types, join techs, strength types, join strengths,
+                         weakness types, join weaknesses, student id-name-invited date
+    """
     student_id = []
     si = []
     tech_types = []
@@ -164,6 +197,7 @@ def read_si():
     output = pd.concat([df2, df], axis=1)
     output["date"] = pd.to_datetime(output["date"])
     del output["index"]
+    output.loc[617:922, "date"] = output["date"] - pd.DateOffset(months=1)
 
     tt_df = pd.DataFrame(tech_types, columns=["tech_name"])
     jt_df = pd.DataFrame(join_tech, columns=["student_id", "tech_id", "tech_self_score"])
@@ -175,11 +209,18 @@ def read_si():
     jw_df = pd.DataFrame(join_weaknesses, columns=["student_id", "weakness_id"])
 
     id_name = pd.concat([output["student_id"], output["name"], output["date"]], axis=1)
+    output.drop_duplicates(subset=output.columns.difference(["student_id"]), inplace=True)
+    id_name.drop_duplicates(subset=id_name.columns.difference(["student_id"]), inplace=True)
 
     return output, tt_df, jt_df, st_df, js_df, wt_df, jw_df, id_name
 
 
 def behaviour_tables():
+    logging.info(f"Cleaning, converting and creating the courses and associating table at {time.time()}")
+    """
+    Function that reads the courses csv files and creates all the requisite tables from those files.
+    :return: Dataframes: behaviour scores, trainers, behaviour types, courses, student-courses
+    """
     beh_scores = []
     course_names = []
     all_students = []
@@ -239,6 +280,12 @@ def behaviour_tables():
 
 
 def read_sparta_day(key):
+    """
+    Reads the text files and separates the data into two dataframes to be used in different tables. Also converts
+    date strings to date dtypes
+    :param key: s3 key
+    :return: Dataframe: names with their location, scores
+    """
     file_contents = extract_txt(key)
     names = [re.split(" - ", i)[0] for i in file_contents[3:]]
     name_df = pd.DataFrame(names, columns=["full_name"])
@@ -253,6 +300,11 @@ def read_sparta_day(key):
 
 
 def sparta_score_info():
+    logging.info(f"Reading and cleaning sparta day score info at {time.time()}")
+    """
+    Reads all the sparta day text files and cleans the data. Removes unwanted characters from names
+    :return: Dataframes: names and locations, scores
+    """
     locations = []
     scores = []
     for i in s_day:
@@ -262,6 +314,7 @@ def sparta_score_info():
     loc = pd.concat(locations)
     sc = pd.concat(scores)
 
+    loc["sparta_day_date"] = pd.to_datetime(loc["sparta_day_date"])
     sc["full_name"] = sc["full_name"].str.replace("[;.]| '", "", regex=True)
     sc["full_name"] = sc["full_name"].str.replace("' ", "'", regex=True)
     sc["full_name"] = sc["full_name"].str.replace(" - ", "-", regex=True)
@@ -271,10 +324,16 @@ def sparta_score_info():
 
 
 def gen_sparta(input_df, loc_info):
+    logging.info(f"Creating the final sparta day information dataframe at {time.time()}")
+    """
+    Merging the sparta day information table with student IDs and locations of their sparta day
+    :param input_df: incomplete sparta day information dataframe
+    :param loc_info: dataframe of locations for each student
+    :return: Dataframe: complete sparta day information dataframe
+    """
     final_sparta = pd.merge(input_df, loc_info, left_on=[input_df["name"].str.lower(), input_df["date"]],
-                            right_on=[loc_info["full_name"].str.lower(), loc_info["sparta_day_date"]], how="inner")
+                            right_on=[loc_info["full_name"].str.lower(), loc_info["sparta_day_date"]], how="left")
 
-    final_sparta = final_sparta.drop_duplicates(subset=["student_id"])
     final_sparta.drop(["name", "key_0", "key_1", "full_name", "sparta_day_date"], axis=1, inplace=True)
     final_sparta.rename(columns={"date": "invited_date", "result": "passed"}, inplace=True)
 
@@ -282,6 +341,13 @@ def gen_sparta(input_df, loc_info):
 
 
 def sparta_scores(input_df, id_df):
+    logging.info(f"Creating the final sparta day scores dataframe at {time.time()}")
+    """
+    Creating the final sparta day scores dataframe by adding the student IDs to the dataframe
+    :param input_df: incomplete sparta day scores dataframe
+    :param id_df: student ID dataframe
+    :return: complete sparta day scores dataframe
+    """
     final_score = pd.merge(id_df, input_df, left_on=[id_df["name"].str.lower(), id_df["date"]],
                            right_on=[input_df["full_name"].str.lower(), input_df["sparta_day_date"]], how="inner")
     final_score = final_score.drop(["key_0", "key_1", "name", "date", "full_name", "sparta_day_date"], axis=1)
@@ -290,6 +356,13 @@ def sparta_scores(input_df, id_df):
 
 
 def gen_pi(student_id_df):
+    logging.info(f"Generating the personal information and contact details dataframes at {time.time()}")
+    """
+    Splits the personal information Dataframe gotten from the applicants CSV files into their personal information and
+    their contact details, after matching student IDs to them.
+    :param student_id_df: dataframe with the student IDs
+    :return: Dataframe: incomplete personal inf, contact details
+    """
     pi_list = []
     for i in applicants:
         d = extract_csv(i)
@@ -315,7 +388,15 @@ def gen_pi(student_id_df):
 
 
 def final_pi(input_df, staff_id_df, course_id_df):
-
+    logging.info(f"Finalising the personal information and staff information dataframes at {time.time()}")
+    """
+    Add the staff ID and course ID to the personal information dataframes and also adds the talent staff to the 
+    incomplete staff information dataframe
+    :param input_df: incomplete personal information dataframe
+    :param staff_id_df: incomplete staff information dataframe
+    :param course_id_df: dataframe with the course IDs
+    :return: Dataframes: finished personal information, finished staff information
+    """
     trainers = input_df["invited_by"].unique().tolist()
     trainers_df = pd.DataFrame(trainers, columns=["full_name"])
     trainers_df["team"] = "talent"
@@ -328,7 +409,7 @@ def final_pi(input_df, staff_id_df, course_id_df):
     with_tid = with_tid.drop(["key_0", "invited_by", "full_name_y", "team"], axis=1)
 
     final = pd.merge(with_tid, course_id_df, left_on=with_tid["full_name_x"].str.lower(),
-                     right_on=course_id_df["name"].str.lower(), how="inner")
+                     right_on=course_id_df["name"].str.lower(), how="left")
     final.drop(["key_0", "invited_date", "name"], axis=1, inplace=True)
     final.rename(columns={"full_name_x": "full_name"}, inplace=True)
     final = final.drop_duplicates(subset=final.columns.difference(["student_id"]))
@@ -338,6 +419,13 @@ def final_pi(input_df, staff_id_df, course_id_df):
 
 
 def behaviour_scores(input_df, id_df):
+    logging.info(f"Creating the final behaviour scores dataframe at {time.time()}")
+    """
+    Attaching student IDs to the incomplete behaviour scores dataframe
+    :param input_df: incomplete behaviour scores dataframe
+    :param id_df: dataframe with student IDs 
+    :return: Dataframe: final behaviour scores dataframe
+    """
     behaviour_scores_df = pd.merge(id_df, input_df, left_on=id_df["name"].str.lower(),
                                    right_on=input_df["name"].str.lower(), how="inner")
 
