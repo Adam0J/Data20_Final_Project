@@ -5,18 +5,45 @@ from pprint import pprint
 import re
 
 
+# bucket_name = 'data20-final-project'
+# s3_resource = boto3.resource('s3')
+# s3_client = boto3.client('s3')
+# bucket = s3_resource.Bucket(bucket_name)
+# contents = bucket.objects.all() # iterable
+# Keys = [file.key for file in contents]
+# classes = []
+s3 = boto3.client('s3')
 bucket_name = 'data20-final-project'
-s3_resource = boto3.resource('s3')
-s3_client = boto3.client('s3')
-bucket = s3_resource.Bucket(bucket_name)
-contents = bucket.objects.all() # iterable
-Keys = [file.key for file in contents]
-classes = []
-for key in Keys:
-    if 'Academy' in key:
-        classes.append(key[8:-15])
-print(classes)
 
+s3_resource = boto3.resource('s3')
+bucket = s3_resource.Bucket(bucket_name)
+contents = bucket.objects.all()
+
+students = []
+courses = []
+applicants = []
+s_day = []
+
+
+def sort_keys():
+    for i in contents:
+        if re.findall(".json$", i.key):
+            students.append(i.key)
+        elif re.findall("^Academy", i.key):
+            courses.append(i.key)
+        elif re.findall(".csv$", i.key):
+            applicants.append(i.key)
+        elif re.findall(".txt$", i.key):
+            s_day.append(i.key)
+sort_keys()
+
+for key in s_day:
+    s3_object = s3.get_object(
+        Bucket=bucket_name,
+        Key=key)
+    strbody = s3_object['Body'].read()
+    a = strbody.decode('utf-8').splitlines()
+print(a)
 # t_keys = []
 # for key in Keys:
 #     if 'Talent' in key:

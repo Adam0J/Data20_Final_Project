@@ -70,7 +70,6 @@ def convert_scores(info):
     return pd.DataFrame(student_scores, columns=["full_name", "psychometrics_score", "psychometrics_max",
                                                  "presentations_score", "presentations_max"])
 
-
 def date_fix(date_string):
     m = re.split(" ", date_string)
     if m[0] == "SEPT":
@@ -175,6 +174,9 @@ def read_si():
     jw_df = pd.DataFrame(join_weaknesses, columns=["student_id", "weakness_id"])
 
     id_name = pd.concat([output["student_id"], output["name"], output["date"]], axis=1)
+
+    output.drop_duplicates(subset=output.columns.difference(["student_id"]), inplace=True)
+    id_name.drop_duplicates(subset=id_name.columns.difference(["student_id"]), inplace=True)
 
     return output, tt_df, jt_df, st_df, js_df, wt_df, jw_df, id_name
 
