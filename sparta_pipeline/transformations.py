@@ -376,12 +376,12 @@ def gen_pi(student_id_df):
                       right_on=[pi["full_name"].str.lower(), pi["invited_date"]], how="right")
     new_pi.drop(["key_0", "key_1", "date", "id", "name"], axis=1, inplace=True)
 
-    new_pi.drop(["email", "city", "address", "postcode", "phone_number"], axis=1, inplace=True)
     index_series = pd.Series([i for i in range(1, len(new_pi)+1)])
     new_pi["student_id"].fillna(value=index_series, inplace=True)
     new_pi = new_pi.astype({"student_id": int})
     contacts = new_pi[["student_id", "email", "city", "address", "postcode", "phone_number"]].copy()
     contacts = contacts.drop_duplicates(subset=contacts.columns.difference(["student_id"]))
+    new_pi.drop(["email", "city", "address", "postcode", "phone_number"], axis=1, inplace=True)
 
     contacts["address"] = contacts["address"].str.title()
 
