@@ -211,17 +211,12 @@ def read_si():
 
     duplicate_row = id_name[id_name.duplicated(subset=id_name.columns.difference(["student_id"]))]
     dupes = duplicate_row["student_id"].values.tolist()
-    print(dupes)
-
-    print(duplicate_row)
-    print(len(jt_df), len(js_df), len(jw_df))
 
     for x in dupes:
         jt_df.drop(jt_df[jt_df["student_id"] == x].index, inplace=True)
         js_df.drop(js_df[js_df["student_id"] == x].index, inplace=True)
         jw_df.drop(jw_df[jw_df["student_id"] == x].index, inplace=True)
 
-    print(len(jt_df), len(js_df), len(jw_df))
     output.drop_duplicates(subset=output.columns.difference(["student_id"]), inplace=True)
     id_name.drop_duplicates(subset=id_name.columns.difference(["student_id"]), inplace=True)
 
