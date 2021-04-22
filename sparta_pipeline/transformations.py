@@ -168,10 +168,10 @@ def read_si():
     tt_df = pd.DataFrame(tech_types, columns=["tech_name"])
     jt_df = pd.DataFrame(join_tech, columns=["student_id", "tech_id", "tech_self_score"])
 
-    st_df = pd.DataFrame(strength_types, columns=["strength_name"])
+    st_df = pd.DataFrame(strength_types, columns=["strength"])
     js_df = pd.DataFrame(join_strengths, columns=["student_id", "strength_id"])
 
-    wt_df = pd.DataFrame(weakness_types, columns=["weakness_name"])
+    wt_df = pd.DataFrame(weakness_types, columns=["weakness"])
     jw_df = pd.DataFrame(join_weaknesses, columns=["student_id", "weakness_id"])
 
     id_name = pd.concat([output["student_id"], output["name"], output["date"]], axis=1)
@@ -275,6 +275,7 @@ def gen_sparta(input_df, loc_info):
                             right_on=[loc_info["full_name"].str.lower(), loc_info["sparta_day_date"]], how="inner")
 
     final_sparta = final_sparta.drop_duplicates(subset=["student_id"])
+
     final_sparta.drop(["name", "key_0", "key_1", "full_name", "sparta_day_date"], axis=1, inplace=True)
     final_sparta.rename(columns={"date": "invited_date", "result": "passed"}, inplace=True)
 
@@ -309,6 +310,7 @@ def gen_pi(student_id_df):
     new_pi["student_id"].fillna(value=index_series, inplace=True)
     new_pi = new_pi.astype({"student_id": int})
     contacts = contacts.drop_duplicates(subset=contacts.columns.difference(["student_id"]))
+
     contacts["address"] = contacts["address"].str.title()
 
     return new_pi, contacts
@@ -328,10 +330,12 @@ def final_pi(input_df, staff_id_df, course_id_df):
     with_tid = with_tid.drop(["key_0", "invited_by", "full_name_y", "team"], axis=1)
 
     final = pd.merge(with_tid, course_id_df, left_on=with_tid["full_name_x"].str.lower(),
-                     right_on=course_id_df["name"].str.lower(), how="inner")
+                     right_on=course_id_df["name"].str.lower(), how="left")
     final.drop(["key_0", "invited_date", "name"], axis=1, inplace=True)
     final.rename(columns={"full_name_x": "full_name"}, inplace=True)
+
     final = final.drop_duplicates(subset=final.columns.difference(["student_id"]))
+
     final["full_name"] = final["full_name"].str.title()
 
     return final, staff

@@ -41,7 +41,7 @@ def create_contacts():
 def create_courses():
     Table(
         'courses', meta,
-        Column('course_id', Integer, primary_key=True),
+        Column('course_id', Integer, primary_key=True, autoincrement=False),
         Column('course_name', String),
         Column("staff_id", Integer, ForeignKey("staff_information.staff_id"))
     )
@@ -50,7 +50,7 @@ def create_courses():
 def create_sparta():
     Table(
         'sparta_day_information', meta,
-        Column('student_id', Integer, primary_key=True, autoincrement=False),
+        Column('student_id', Integer, ForeignKey("personal_information.student_id"), primary_key=True),
         Column('invited_date', Date),
         Column('self_development', Boolean),
         Column('geo_flex', Boolean),
@@ -142,7 +142,7 @@ def create_sparta_scores():
 def create_personal_information():
     Table(
         'personal_information', meta,
-        Column('student_id', Integer, ForeignKey("sparta_day_information.student_id"), primary_key=True),
+        Column('student_id', Integer, primary_key=True, autoincrement=False),
         Column('full_name', String),
         Column('gender', String),
         Column('dob', Date),
@@ -156,6 +156,7 @@ def create_personal_information():
 def main():
     create_staff()
     create_courses()
+    create_personal_information()
     create_sparta()
     create_behaviours()
     create_behaviour_scores()
@@ -166,9 +167,8 @@ def main():
     create_weaknesses()
     create_student_weaknesses()
     create_sparta_scores()
-    create_personal_information()
     create_contacts()
-    meta.create_all(engine)
+    meta.create_all(engine, checkfirst=True)
 
 
 if __name__ == "__main__":
