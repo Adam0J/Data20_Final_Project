@@ -202,10 +202,10 @@ def read_si():
     tt_df = pd.DataFrame(tech_types, columns=["tech_name"])
     jt_df = pd.DataFrame(join_tech, columns=["student_id", "tech_id", "tech_self_score"])
 
-    st_df = pd.DataFrame(strength_types, columns=["strength_name"])
+    st_df = pd.DataFrame(strength_types, columns=["strength"])
     js_df = pd.DataFrame(join_strengths, columns=["student_id", "strength_id"])
 
-    wt_df = pd.DataFrame(weakness_types, columns=["weakness_name"])
+    wt_df = pd.DataFrame(weakness_types, columns=["weakness"])
     jw_df = pd.DataFrame(join_weaknesses, columns=["student_id", "weakness_id"])
 
     id_name = pd.concat([output["student_id"], output["name"], output["date"]], axis=1)
@@ -382,6 +382,7 @@ def gen_pi(student_id_df):
     new_pi["student_id"].fillna(value=index_series, inplace=True)
     new_pi = new_pi.astype({"student_id": int})
     contacts = contacts.drop_duplicates(subset=contacts.columns.difference(["student_id"]))
+
     contacts["address"] = contacts["address"].str.title()
 
     return new_pi, contacts
@@ -412,7 +413,9 @@ def final_pi(input_df, staff_id_df, course_id_df):
                      right_on=course_id_df["name"].str.lower(), how="left")
     final.drop(["key_0", "invited_date", "name"], axis=1, inplace=True)
     final.rename(columns={"full_name_x": "full_name"}, inplace=True)
+
     final = final.drop_duplicates(subset=final.columns.difference(["student_id"]))
+
     final["full_name"] = final["full_name"].str.title()
 
     return final, staff
