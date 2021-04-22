@@ -395,6 +395,7 @@ def gen_pi(student_id_df):
 
     contacts = new_pi[["student_id", "email", "city", "address", "postcode", "phone_number"]].copy()
     contacts = contacts.drop_duplicates(subset=contacts.columns.difference(["student_id"]))
+    new_pi.drop(["email", "city", "address", "postcode", "phone_number"], axis=1, inplace=True)
 
     new_pi.drop(["email", "city", "address", "postcode", "phone_number"], axis=1, inplace=True)
     contacts["address"] = contacts["address"].str.title()
