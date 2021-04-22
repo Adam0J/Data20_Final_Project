@@ -182,15 +182,15 @@ def read_si():
 
         tech = file.get("tech_self_score")
         if tech:
-            get_dict_types(s_id, tech, tech_types, join_tech)
+            get_dict_types(int(s_id), tech, tech_types, join_tech)
 
         strengths = file.get("strengths")
         if strengths:
-            get_list_types(s_id, strengths, strength_types, join_strengths)
+            get_list_types(int(s_id), strengths, strength_types, join_strengths)
 
         weaknesses = file.get("weaknesses")
         if weaknesses:
-            get_list_types(s_id, weaknesses, weakness_types, join_weaknesses)
+            get_list_types(int(s_id), weaknesses, weakness_types, join_weaknesses)
 
     df = pd.concat(si).reset_index()
     df2 = pd.DataFrame(student_id, columns=["student_id"], dtype=int)
@@ -198,6 +198,7 @@ def read_si():
     output["date"] = pd.to_datetime(output["date"])
     del output["index"]
     output.loc[617:922, "date"] = output["date"] - pd.DateOffset(months=1)
+    id_name = pd.concat([output["student_id"], output["name"], output["date"]], axis=1)
 
     tt_df = pd.DataFrame(tech_types, columns=["tech_name"])
     jt_df = pd.DataFrame(join_tech, columns=["student_id", "tech_id", "tech_self_score"])
@@ -208,7 +209,14 @@ def read_si():
     wt_df = pd.DataFrame(weakness_types, columns=["weakness"])
     jw_df = pd.DataFrame(join_weaknesses, columns=["student_id", "weakness_id"])
 
-    id_name = pd.concat([output["student_id"], output["name"], output["date"]], axis=1)
+    duplicate_row = id_name[id_name.duplicated(subset=id_name.columns.difference(["student_id"]))]
+    dupes = duplicate_row["student_id"].values.tolist()
+
+    for x in dupes:
+        jt_df.drop(jt_df[jt_df["student_id"] == x].index, inplace=True)
+        js_df.drop(js_df[js_df["student_id"] == x].index, inplace=True)
+        jw_df.drop(jw_df[jw_df["student_id"] == x].index, inplace=True)
+
     output.drop_duplicates(subset=output.columns.difference(["student_id"]), inplace=True)
     id_name.drop_duplicates(subset=id_name.columns.difference(["student_id"]), inplace=True)
 
@@ -379,10 +387,12 @@ def gen_pi(student_id_df):
     index_series = pd.Series([i for i in range(1, len(new_pi)+1)])
     new_pi["student_id"].fillna(value=index_series, inplace=True)
     new_pi = new_pi.astype({"student_id": int})
+
     contacts = new_pi[["student_id", "email", "city", "address", "postcode", "phone_number"]].copy()
     contacts = contacts.drop_duplicates(subset=contacts.columns.difference(["student_id"]))
     new_pi.drop(["email", "city", "address", "postcode", "phone_number"], axis=1, inplace=True)
 
+    new_pi.drop(["email", "city", "address", "postcode", "phone_number"], axis=1, inplace=True)
     contacts["address"] = contacts["address"].str.title()
 
     return new_pi, contacts
