@@ -2,9 +2,6 @@ import boto3
 import json
 import pandas as pd
 import re
-import logging
-
-logging.basicConfig(level=logging.INFO)
 
 s3 = boto3.client('s3')
 bucket_name = 'data20-final-project'
@@ -22,7 +19,7 @@ def extract_csv(key):
         strbody = s3_object['Body']
         return pd.read_csv(strbody)
     else:
-        return "That is not a CSV file."
+        raise Exception("That is not a CSV file.")
 
 
 def extract_json(key):
@@ -33,7 +30,7 @@ def extract_json(key):
         strbody = s3_object['Body'].read()
         return json.loads(strbody)
     else:
-        return "That is not a JSON file."
+        raise Exception("That is not a JSON file.")
 
 
 def extract_txt(key):
@@ -44,5 +41,5 @@ def extract_txt(key):
         strbody = s3_object['Body'].read()
         return strbody.decode('utf-8').splitlines()
     else:
-        return "That is not a TEXT file."
+        raise Exception("That is not a TEXT file.")
 
