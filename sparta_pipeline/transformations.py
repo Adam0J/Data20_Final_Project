@@ -176,7 +176,6 @@ def read_si():
 
     id_name = pd.concat([output["student_id"], output["name"], output["date"]], axis=1)
 
-
     return output, tt_df, jt_df, st_df, js_df, wt_df, jw_df, id_name
 
 
@@ -331,7 +330,7 @@ def final_pi(input_df, staff_id_df, course_id_df):
     with_tid = with_tid.drop(["key_0", "invited_by", "full_name_y", "team"], axis=1)
 
     final = pd.merge(with_tid, course_id_df, left_on=with_tid["full_name_x"].str.lower(),
-                     right_on=course_id_df["name"].str.lower(), how="inner")
+                     right_on=course_id_df["name"].str.lower(), how="left")
     final.drop(["key_0", "invited_date", "name"], axis=1, inplace=True)
     final.rename(columns={"full_name_x": "full_name"}, inplace=True)
 

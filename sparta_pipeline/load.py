@@ -1,5 +1,6 @@
 from sparta_pipeline.config_manager import *
 from sqlalchemy import *
+import pyodbc
 
 with open("..\\credentials.txt") as f1:
     line_file1 = f1.readlines()
@@ -17,5 +18,6 @@ meta = MetaData()
 
 def load(df, input_table):
     df.to_sql(input_table, engine, index=False, if_exists="append")
+
 
 

@@ -16,3 +16,6 @@ numpy~=1.20.1
 # re
 # time
 # unittest
+
+pyodbc~=4.0.30
+configparser~=4.0.2
