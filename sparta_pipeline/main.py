@@ -32,11 +32,8 @@ temp_pi = transformations.gen_pi(talent_data[7])
 # Creating the final personal info Dataframe
 final_personal_info = transformations.final_pi(temp_pi[0], behaviour_data[1], behaviour_data[4])
 
-# Making new sparta_day_information tables, adding names and ids not in sparta_day
-# sparta_day_information = transformations.sparta_day_info(sdi_df, not_in_sdi_ids)
 
 # list all of the dataframes to be loaded
-
 tech_types = talent_data[1]
 strength_types = talent_data[3]
 weakness_types = talent_data[5]

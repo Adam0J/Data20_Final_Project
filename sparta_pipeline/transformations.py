@@ -45,8 +45,6 @@ def convert_si(info):
     to_load = {}
     for i in si_columns:
         if i in info:
-            # logging.info(i)
-            # logging.info(info.get(i))
             if info.get(i) in ["Yes", "Pass"]:
                 to_load.update({i: 1})
             elif info.get(i) in ["No", "Fail"]:
